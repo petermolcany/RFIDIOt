@@ -35,10 +35,8 @@ import time
 from Crypto.Hash import SHA
 from Crypto.Cipher import DES3
 from Crypto.Cipher import DES
-from operator import *
+from operator import xor
 from . import pynfc
-import signal
-import socket
 from . import pyandroid
 
 try:
@@ -1126,7 +1124,7 @@ class rfidiot:
                                         if self.DEBUG:
                                                 print('Error: Unknown card type specified: %s' % cardtype)
                                         return False
-                        except ValueError:
+                        except ValueError as e:
                                 self.errorcode = 'Error selecting card using LIBNFC' + e
 
                 if self.readertype == self.READER_ANDROID:
@@ -1143,7 +1141,7 @@ class rfidiot:
                                         if self.DEBUG:
                                                 print('Error selecting card')
                                         return False
-                        except ValueError:
+                        except ValueError as e:
                                 self.errorcode = 'Error reading card using Android' + e
                 return False
         def h2publicselect(self):

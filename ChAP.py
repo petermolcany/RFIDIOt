@@ -33,7 +33,7 @@ from smartcard.Exceptions import CardRequestTimeoutException
 
 import getopt
 import sys
-from operator import *
+from operator import xor
 
 # local imports
 from rfidiot.iso3166 import ISO3166CountryCodes

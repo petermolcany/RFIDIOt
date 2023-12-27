@@ -36,13 +36,10 @@ MAXCHUNK= 118
 import rfidiot
 import sys
 import os
-import subprocess
 from Crypto.Hash import SHA
 from Crypto.Cipher import DES3
 from Crypto.Cipher import DES
-import string
-from operator import *
-import io
+from operator import xor, and_
 from tkinter import *
 import PIL.Image as Image
 import PIL.ImageTk as ImageTk

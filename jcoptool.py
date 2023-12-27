@@ -26,7 +26,6 @@ import sys
 import os
 import string
 from Crypto.Cipher import DES3
-from Crypto.Cipher import DES
 from pyasn1.codec.ber import decoder
 
 try:

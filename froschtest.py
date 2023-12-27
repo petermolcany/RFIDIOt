@@ -21,7 +21,6 @@
 #
 
 import rfidiot
-import sys
 import os
 
 try:

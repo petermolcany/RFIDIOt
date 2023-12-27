@@ -24,8 +24,6 @@
 #
 
 #import RFIDIOtconfig
-import sys
-import os
 import pyandroid
 import datetime
 

@@ -22,6 +22,7 @@
 
 
 import rfidiot
+import os
 
 try:
         card= rfidiot.card

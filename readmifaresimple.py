@@ -23,7 +23,6 @@
 import sys
 import os
 import rfidiot
-import time
 import string
 
 try:

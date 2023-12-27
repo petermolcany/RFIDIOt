@@ -25,7 +25,6 @@
 #        specifiy KEY for protected tags. If not specified, TRANSPORT key will be tried.
 
 import rfidiot
-import sys
 import os
 
 try:
