@@ -23,19 +23,23 @@
 import os
 import rfidiot
 
-try:
-    card= rfidiot.card
-except:
-    print("Couldn't open reader!")
-    os._exit(True)
+def main():
+    try:
+        card= rfidiot.card
+    except:
+        print("Couldn't open reader!")
+        os._exit(True)
 
-card.info('eeprom v0.1e')
-print('Station:\t' + card.station())
-print('Protocol:\t' + card.PCON())
-print('Protocol2:\t' + card.PCON2())
-print('Protocol3:\t' + card.PCON3())
+    card.info('eeprom v0.1e')
+    print('Station:\t' + card.station())
+    print('Protocol:\t' + card.PCON())
+    print('Protocol2:\t' + card.PCON2())
+    print('Protocol3:\t' + card.PCON3())
 
-address= 0
-while address < 0xf0:
-    print('address %02x:\t%s' % (address,card.readEEPROM(address)))
-    address += 1
+    address= 0
+    while address < 0xf0:
+        print('address %02x:\t%s' % (address,card.readEEPROM(address)))
+        address += 1
+
+if __name__ == '__main__':
+    main()

@@ -23,13 +23,17 @@
 import os
 import rfidiot
 
-try:
-    card= rfidiot.card
-except:
-    print("Couldn't open reader!")
-    os._exit(False)
+def main():
+    try:
+        card= rfidiot.card
+    except:
+        print("Couldn't open reader!")
+        os._exit(False)
 
-args= rfidiot.args
+    args= rfidiot.args
 
-print('Setting ID to: ' + args[0])
-print(card.demotag(card.DT_SET_UID,card.ToBinary(args[0])))
+    print('Setting ID to: ' + args[0])
+    print(card.demotag(card.DT_SET_UID,card.ToBinary(args[0])))
+
+if __name__ == '__main__':
+    main()

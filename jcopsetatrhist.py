@@ -28,9 +28,12 @@ import sys
 import os
 import rfidiot
 
+global card
+
 try:
     card= rfidiot.card
-except:
+except AttributeError:
+    print("Couldn't open reader!")
     os._exit(True)
 
 args= rfidiot.args
@@ -43,7 +46,7 @@ P2= '00'
 JCOP_ATR_AID= 'DC4420060607'
 
 if Help or len(args) < 2:
-    print('\nUsage:\n\n\t%s [OPTIONS] \'SET\' <HEX DATA>' % sys.argv[0])
+    print(f'\nUsage:\n\n\t{sys.argv[0]} [OPTIONS] \'SET\' <HEX DATA>')
     print()
     print('\tHEX DATA is up to 15 BYTES of ASCII HEX.')
     print()
@@ -53,12 +56,12 @@ if Help or len(args) < 2:
     print()
     os._exit(True)
 
-def jcop_set_atr_hist(bytes):
+def jcop_set_atr_hist(atr_bytes):
     cla= CLA
     ins= 'ATR_HIST'
     p1= P1
     p2= P2
-    data= '%02X' % (len(bytes) / 2) + bytes
+    data= '%02X' % (len(atr_bytes) / 2) + atr_bytes
     lc= '%02X' % (len(data) / 2)
     if card.send_apdu('','','','',cla,ins,p1,p2,lc,data,''):
         return True, card.data
@@ -75,10 +78,10 @@ def select_atrhist_app():
     return bool(card.errorcode == card.ISO_OK)
 
 def error_exit(message,error):
-    print('  %s, error number: %s' % (message,error), end=' ')
+    print(f'  {message}, error number:{error}', end=' ')
     try:
         print(card.ISO7816ErrorCodes[error])
-    except:
+    except IndexError:
         print()
     os._exit(True)
 

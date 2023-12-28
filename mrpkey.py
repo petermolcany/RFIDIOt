@@ -372,7 +372,7 @@ def secure_select_file(keyenc, keymac,file):
     if DEBUG:
         print('DO8E: ', end=' ')
         passport.HexPrint(do8e)
-    lc= "%02x" % (len(do87) + len(do8e))
+    lc= f"{len(do87) + len(do8e):02x}"
     le= '00'
     data= passport.ToHex(do87 + do8e)
     if DEBUG:
@@ -398,10 +398,10 @@ def secure_read_binary(keymac,bytes,offset):
 
     cla= '0c'
     ins= passport.ISOAPDU['READ_BINARY']
-    hexoffset= '%04x' % offset
+    hexoffset= f'{offset:04x}'
     p1= hexoffset[0:2]
     p2= hexoffset[2:4]
-    le= '%02x' % bytes
+    le= f'{bytes:02x}'
     command= passport.PADBlock(passport.ToBinary(cla + ins + p1 + p2))
     do97= passport.ToBinary(passport.DO97 + le)
     m= command + do97
@@ -409,7 +409,7 @@ def secure_read_binary(keymac,bytes,offset):
     n= SSC + m
     cc= passport.DESMAC(n,keymac,'')
     do8e= passport.ToBinary(passport.DO8E) + cc
-    lc= "%02x" % (len(do97) + len(do8e))
+    lc= f"{len(do97) + len(do8e):02x}"
     le= '00'
     data= passport.ToHex(do97 + do8e)
     if DEBUG:
@@ -441,7 +441,7 @@ def calculate_check_digit(data):
             value = int(d)
         cd += value * MRZ_WEIGHT[n % 3]
         n += 1
-    return '%s' % (cd % 10)
+    return f'{cd % 10}'
 
 def check_cc(key,rapdu):
     "Check Cryptographic Checksum"
@@ -642,7 +642,7 @@ def decode_ef_dg1(data):
     while pointer < len(data):
         if data[pointer] == chr(0x80):
             break
-        out += '%s' % chr(int(passport.ToHex(data[pointer]),16))
+        out += f'{chr(int(passport.ToHex(data[pointer]), 16))}'
         pointer += 1
     print('  Decoded Data: ' + out)
     DocumentType= out[0:2]
@@ -713,11 +713,11 @@ def decode_ef_dg2(data):
                         length= len(FAC)
                         tag= datahex[position:position + length]
                         if not tag == FAC:
-                            print('Missing FAC in CBEFF block: %s' % tag)
+                            print(f'Missing FAC in CBEFF block: {tag}')
                             os._exit(True)
                         position += length
                         # FACE version
-                        print('    FACE version: %s' % passport.ToBinary(datahex[position:position + 6]))
+                        print(f'    FACE version: {passport.ToBinary(datahex[position:position + 6])}')
                         position += 8
                         # Image length
                         print('      Record Length: %d' % int(datahex[position:position + 8],16))
@@ -733,58 +733,58 @@ def decode_ef_dg2(data):
                         features= int(datahex[position:position + 4],16)
                         print('      Number of Features: %d' % features)
                         position += 4
-                        print('      Gender: %s' % ISO19794_5_GENDER[datahex[position:position + 2]])
+                        print(f'      Gender: {ISO19794_5_GENDER[datahex[position:position + 2]]}')
                         position += 2
-                        print('      Eye Colour: %s' % ISO19794_5_EYECOLOUR[datahex[position:position + 2]])
+                        print(f'      Eye Colour: {ISO19794_5_EYECOLOUR[datahex[position:position + 2]]}')
                         position += 2
-                        print('      Hair Colour: %s' % ISO19794_5_HAIRCOLOUR[datahex[position:position + 2]])
+                        print(f'      Hair Colour: {ISO19794_5_HAIRCOLOUR[datahex[position:position + 2]]}')
                         position += 2
                         mask= int(datahex[position:position + 6],16)
-                        print('      Feature Mask: %s' % datahex[position:position + 6])
+                        print(f'      Feature Mask: {datahex[position:position + 6]}')
                         position += 6
                         if features:
                             print('      Features:')
                             for m, d in list(ISO19794_5_FEATURE.items()):
                                 if and_(mask,m):
-                                    print('    : %s' % d)
-                        print('      Expression: %s' % ISO19794_5_EXPRESSION[datahex[position:position + 4]])
+                                    print(f'    : {d}')
+                        print(f'      Expression: {ISO19794_5_EXPRESSION[datahex[position:position + 4]]}')
                         position += 4
-                        print('      Pose Angle: %s' % datahex[position:position + 6])
+                        print(f'      Pose Angle: {datahex[position:position + 6]}')
                         position += 6
-                        print('      Pose Angle Uncertainty: %s' % datahex[position:position + 6])
+                        print(f'      Pose Angle Uncertainty: {datahex[position:position + 6]}')
                         position += 6
                         while features > 0:
-                            print('      Feature block: %s' % datahex[position:position + 16])
+                            print(f'      Feature block: {datahex[position:position + 16]}')
                             img_features.append(datahex[position:position + 16])
                             features -= 1
                             position += 16
-                        print('      Image Type: %s' % ISO19794_5_IMG_TYPE[datahex[position:position + 2]])
+                        print(f'      Image Type: {ISO19794_5_IMG_TYPE[datahex[position:position + 2]]}')
                         position += 2
-                        print('      Image Data Type: %s' % ISO19794_5_IMG_DTYPE[datahex[position:position + 2]])
+                        print(f'      Image Data Type: {ISO19794_5_IMG_DTYPE[datahex[position:position + 2]]}')
                         Filetype= ISO19794_5_IMG_FTYPE[datahex[position:position + 2]]
                         position += 2
                         print('      Image Width: %d' % int(datahex[position:position + 4],16))
                         position += 4
                         print('      Image Height: %d' % int(datahex[position:position + 4],16))
                         position += 4
-                        print('      Image Colour Space: %s' % ISO19794_5_IMG_CSPACE[datahex[position:position + 2]])
+                        print(f'      Image Colour Space: {ISO19794_5_IMG_CSPACE[datahex[position:position + 2]]}')
                         position += 2
-                        print('      Image Source Type: %s' % ISO19794_5_IMG_SOURCE[datahex[position:position + 2]])
+                        print(f'      Image Source Type: {ISO19794_5_IMG_SOURCE[datahex[position:position + 2]]}')
                         position += 2
-                        print('      Image Device Type: %s' % datahex[position:position + 6])
+                        print(f'      Image Device Type: {datahex[position:position + 6]}')
                         position += 6
-                        print('      Image Quality: %s' % ISO19794_5_IMG_QUALITY[datahex[position:position + 2]])
+                        print(f'      Image Quality: {ISO19794_5_IMG_QUALITY[datahex[position:position + 2]]}')
                         position += 2
                         if instances > 1:
                             filename = '%sEF_DG2_%i.%s' % (tempfiles,instance,Filetype)
                             instance += 1
                         else:
-                            filename = '%sEF_DG2.%s' % (tempfiles,Filetype)
+                            filename = f'{tempfiles}EF_DG2.{Filetype}'
                         img= open(filename,'wb+')
                         img.write(data[position / 2:startposition + fieldlength])
                         img.flush()
                         img.close()
-                        print('     JPEG image stored in %s' % filename)
+                        print(f'     JPEG image stored in {filename}')
                         position = (startposition + fieldlength) * 2
                     else:
                         position += asn1fieldlength(datahex[position:])
@@ -832,7 +832,7 @@ def decode_ef_dg7(data):
                     img.write(data[position / 2:position + fieldlength])
                     img.flush()
                     img.close()
-                    print('     JPEG image stored in %sEF_DG7.%s' % (tempfiles,Filetype))
+                    print(f'     JPEG image stored in {tempfiles}EF_DG7.{Filetype}')
                     Display_DG7= True
                     position += fieldlength * 2
         if not decoded:
@@ -846,7 +846,7 @@ def jmrtd_create_file(file,length):
     p1= '00'
     p2= '00'
     le= '06' # length is always 6
-    data= "6304" + "%04x" % length + file
+    data= "6304" + f"{length:04x}" + file
     if passport.send_apdu('','','','','',ins,p1,p2,le,data,''):
         return
     if passport.errorcode == '6D00':
@@ -891,11 +891,11 @@ def jmrtd_write_file(file,data):
 
 def jmrtd_update_binary(offset,data):
     "write a chunk of data to an offset within the currently selected JMRTD file"
-    hexoff= "%04x" % offset
+    hexoff= f"{offset:04x}"
     ins= 'UPDATE_BINARY'
     p1= hexoff[0:2]
     p2= hexoff[2:4]
-    lc= "%02x" % len(data)
+    lc= f"{len(data):02x}"
     data= passport.ToHex(data)
     if passport.send_apdu('','','','','',ins,p1,p2,lc,data,''):
         return
@@ -913,8 +913,8 @@ def jmrtd_personalise(documentnumber,dob,expiry):
     ins= 'PUT_DATA'
     p1= '00'
     p2= '62'
-    data= '621B04' + "%02x" % len(documentnumber) + passport.ToHex(documentnumber) + '04' + "%02x" % len(dob) + passport.ToHex(dob) + '04' + "%02X" % len(expiry) + passport.ToHex(expiry)
-    lc= "%02X" % (len(data) / 2)
+    data= '621B04' + f"{len(documentnumber):02x}" + passport.ToHex(documentnumber) + '04' + f"{len(dob):02x}" + passport.ToHex(dob) + '04' + f"{len(expiry):02X}" + passport.ToHex(expiry)
+    lc= f"{len(data) / 2:02X}"
     if passport.send_apdu('','','','','',ins,p1,p2,lc,data,''):
         return
     if passport.errorcode == '6D00':
@@ -922,7 +922,7 @@ def jmrtd_personalise(documentnumber,dob,expiry):
         cla= '10'
         ins= 'VONJEEK_SET_MRZ'
         data= passport.ToHex(documentnumber) +  passport.ToHex(calculate_check_digit(documentnumber)) + passport.ToHex(dob) + passport.ToHex(calculate_check_digit(dob)) + passport.ToHex(expiry) + passport.ToHex(calculate_check_digit(expiry))
-        lc= "%02X" % (len(data) / 2)
+        lc= f"{len(data) / 2:02X}"
         if passport.send_apdu('','','','',cla,ins,p1,p2,lc,data,''):
             # see if we need to set BAC or not, hacky way for now...
             if os.access(filespath+NOBAC_FILE,os.F_OK):
@@ -1072,7 +1072,7 @@ if os.access(args[0],os.F_OK):
     try:
         passfile= open(filespath + 'EF_COM.BIN','rb')
     except:
-        print("Can't open %s" % (filespath + 'EF_COM.BIN'))
+        print(f"Can't open {filespath + 'EF_COM.BIN'}")
         os._exit(True)
     data= passfile.read()
     eflist= decode_ef_com(data)
@@ -1103,7 +1103,7 @@ if arg0 == 'UNSETBAC':
 
 if arg0 == 'CHECK':
     while not passport.hsselect('08', 'A') and not passport.hsselect('08', 'B'):
-        print('Waiting for passport... (%s)' % passport.errorcode)
+        print(f'Waiting for passport... ({passport.errorcode})')
     if passport.iso_7816_select_file(passport.AID_MRTD,passport.ISO_7816_SELECT_BY_NAME,'0C'):
         print('Device is a Machine Readable Document')
         os._exit(False)
@@ -1142,9 +1142,9 @@ if not FILES and not TEST:
         cardtype='B'
         if passport.hsselect('08', cardtype):
             break
-        print('Waiting for passport... (%s)' % passport.errorcode)
-    print('Device set to %s transfers' % passport.ISO_SPEED[passport.speed])
-    print('Device supports %s Byte transfers' % passport.ISO_FRAMESIZE[passport.framesize])
+        print(f'Waiting for passport... ({passport.errorcode})')
+    print(f'Device set to {passport.ISO_SPEED[passport.speed]} transfers')
+    print(f'Device supports {passport.ISO_FRAMESIZE[passport.framesize]} Byte transfers')
     print()
     print('Checking presence of EF_CardAccess (PACE):')
     status, data= read_file(TAG_FID[EF_CardAccess])
@@ -1332,7 +1332,7 @@ if not FILES and BAC:
                 os._exit(True)
             if bruteforcereset:
                 while not passport.hsselect('08', cardtype):
-                    print('Waiting for passport... (%s)' % passport.errorcode)
+                    print(f'Waiting for passport... ({passport.errorcode})')
                 passport.iso_7816_select_file(passport.AID_MRTD,passport.ISO_7816_SELECT_BY_NAME,'0C')
         else:
             if DEBUG or TEST:
@@ -1348,7 +1348,7 @@ if not FILES and BAC:
     print()
     print('Generate session keys: ')
     print()
-    kseedhex= "%032x" % xor(int(Kifd,16),int(kicc,16))
+    kseedhex= f"{xor(int(Kifd, 16), int(kicc, 16)):032x}"
     kseed= passport.ToBinary(kseedhex)
     print('Kifd XOR Kicc (kseed): ', end=' ')
     passport.HexPrint(kseed)
@@ -1443,13 +1443,13 @@ for tag in eflist:
         else:
             status, data= read_file(TAG_FID[tag])
         if not status:
-            print("skipping (%s)" % passport.ISO7816ErrorCodes[data])
+            print(f"skipping ({passport.ISO7816ErrorCodes[data]})")
             continue
     else:
         try:
             passfile= open(filespath+TAG_FILE[tag],'rb')
         except:
-            print("*** Warning! Can't open %s" % filespath+TAG_FILE[tag])
+            print(f"*** Warning! Can't open {filespath}"+TAG_FILE[tag])
             continue
         data= passfile.read()
 
@@ -1470,12 +1470,12 @@ for tag in eflist:
         outfile.write(data[1+fieldlength/2:])
         outfile.flush()
         outfile.close()
-        exitstatus= os.system("openssl pkcs7 -text -print_certs -in %sEF_SOD.TMP -inform DER" % tempfiles)
+        exitstatus= os.system(f"openssl pkcs7 -text -print_certs -in {tempfiles}EF_SOD.TMP -inform DER")
         if not exitstatus:
-            exitstatus= os.system("openssl pkcs7 -in %sEF_SOD.TMP -out %sEF_SOD.PEM -inform DER" % (tempfiles,tempfiles))
-            exitstatus= os.system("openssl pkcs7 -text -print_certs -in %sEF_SOD.PEM" % tempfiles)
+            exitstatus= os.system(f"openssl pkcs7 -in {tempfiles}EF_SOD.TMP -out {tempfiles}EF_SOD.PEM -inform DER")
+            exitstatus= os.system(f"openssl pkcs7 -text -print_certs -in {tempfiles}EF_SOD.PEM")
             print()
-            print('Certificate stored in %sEF_SOD.PEM' % tempfiles)
+            print(f'Certificate stored in {tempfiles}EF_SOD.PEM')
     if tag == EF_DG1:
         mrz= decode_ef_dg1(data)
     if tag == EF_DG2:
@@ -1484,7 +1484,7 @@ for tag in eflist:
         decode_ef_dg7(data)
     if tag == EF_DG14:
         # TODO parse DG14 SecurityInfos
-        exitstatus= os.system("openssl asn1parse -i -in %sEF_DG14.BIN -inform DER" % tempfiles)
+        exitstatus= os.system(f"openssl asn1parse -i -in {tempfiles}EF_DG14.BIN -inform DER")
     if tag == EF_DG15:
         dg15hex= passport.ToHex(data)
         tag= dg15hex[:2]
@@ -1493,16 +1493,16 @@ for tag in eflist:
         outfile.write(data[1+fieldlength/2:])
         outfile.flush()
         outfile.close()
-        exitstatus= os.system("openssl rsa -in %sEF_DG15.TMP -inform DER -pubin -text -noout" % tempfiles)
+        exitstatus= os.system(f"openssl rsa -in {tempfiles}EF_DG15.TMP -inform DER -pubin -text -noout")
         if not exitstatus:
-            os.system("openssl rsa -in %sEF_DG15.TMP -out %sEF_DG15.PEM -inform DER -pubin" % (tempfiles,tempfiles))
-            print('Key stored in %sEF_DG15.PEM' % tempfiles)
+            os.system(f"openssl rsa -in {tempfiles}EF_DG15.TMP -out {tempfiles}EF_DG15.PEM -inform DER -pubin")
+            print(f'Key stored in {tempfiles}EF_DG15.PEM')
             continue
         if exitstatus:
-            exitstatus= os.system("openssl ec -in %sEF_DG15.TMP -inform DER -pubin -text -noout" % tempfiles)
+            exitstatus= os.system(f"openssl ec -in {tempfiles}EF_DG15.TMP -inform DER -pubin -text -noout")
         if not exitstatus:
-            os.system("openssl ec -in %sEF_DG15.TMP -out %sEF_DG15.PEM -inform DER -pubin" % (tempfiles,tempfiles))
-            print('Key stored in %sEF_DG15.PEM' % tempfiles)
+            os.system(f"openssl ec -in {tempfiles}EF_DG15.TMP -out {tempfiles}EF_DG15.PEM -inform DER -pubin")
+            print(f'Key stored in {tempfiles}EF_DG15.PEM')
 
 #initialise app if we are going to WRITE JMRTD
 if Jmrtd:
@@ -1560,7 +1560,7 @@ if Jmrtd:
             try:
                 passfile= open(filespath+TAG_FILE[tag],'rb')
             except:
-                print("*** Warning! Can't open %s" % filespath+TAG_FILE[tag])
+                print(f"*** Warning! Can't open {filespath}"+TAG_FILE[tag])
                 continue
             data= passfile.read()
         print("Creating JMRTD", TAG_NAME[tag], "Length", len(data))
@@ -1594,18 +1594,19 @@ if not Nogui:
     font= 'courier 22'
     fonta= 'courier 22'
 
-    frame = Frame(root, colormap="new", visual='truecolor').grid()
-    root.title('%s (RFIDIOt v%s)' % (myver,passport.VERSION))
+    frame = Frame(root, colormap="new", visual='truecolor')
+    frame.grid()
+    root.title(f'{myver} (RFIDIOt v{passport.VERSION})')
     if Filetype == "JP2":
         # nasty hack to deal with JPEG 2000 until PIL support comes along
-        exitstatus= os.system("convert %sJP2 %sJPG" % (tempfiles+'EF_DG2.',tempfiles+'EF_DG2.'))
-        print("      (converted %sJP2 to %sJPG for display)" % (tempfiles+'EF_DG2.',tempfiles+'EF_DG2.'))
+        exitstatus= os.system(f"convert {tempfiles + 'EF_DG2.'}JP2 {tempfiles + 'EF_DG2.'}JPG")
+        print(f"      (converted {tempfiles + 'EF_DG2.'}JP2 to {tempfiles + 'EF_DG2.'}JPG for display)")
         if exitstatus:
             print('Could not convert JPEG 2000 image (%d) - please install ImageMagick' % exitstatus)
             os._exit(True)
         elif Display_DG7:
-            os.system("convert %sJP2 %sJPG" % (tempfiles+'EF_DG7.',tempfiles+'EF_DG7.'))
-            print("      (converted %sJP2 to %sJPG for display)" % (tempfiles+'EF_DG7.',tempfiles+'EF_DG7.'))
+            os.system(f"convert {tempfiles + 'EF_DG7.'}JP2 {tempfiles + 'EF_DG7.'}JPG")
+            print(f"      (converted {tempfiles + 'EF_DG7.'}JP2 to {tempfiles + 'EF_DG7.'}JPG for display)")
         Filetype= 'JPG'
     # TODO need to open EF_DG2_* in case of multiple images??
     imagedata = ImageTk.PhotoImage(file=tempfiles + 'EF_DG2.' + Filetype)

@@ -27,7 +27,7 @@ import rfidiot
 
 try:
     card= rfidiot.card
-except:
+except AttributeError:
     os._exit(True)
 
 args= rfidiot.args

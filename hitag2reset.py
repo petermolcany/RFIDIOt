@@ -45,7 +45,7 @@ if len(args) == 0 or len(args) > 2 or help:
     print('Usage: ' + sys.argv[0] + ' <CONTROL> [<OLD PASSWD> <NEW PASSWD>]')
     print()
     print('If the optional PASSWD fields are specified, the password will be set,')
-    print('otherwise factory password \'%s\' will be used' % card.HITAG2_TRANSPORT_RWD)
+    print(f'otherwise factory password \'{card.HITAG2_TRANSPORT_RWD}\' will be used')
     os._exit(True)
 
 if args[0] == 'CONTROL':

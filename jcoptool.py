@@ -29,7 +29,7 @@ import rfidiot
 
 try:
     card= rfidiot.card
-except:
+except AttributeError:
     print("Couldn't open reader!")
     os._exit(True)
 
@@ -149,16 +149,16 @@ def decode_jcop_identify(data, padding):
     manufacture_mask= ord(card.ToBinary(mask_name[10:12])) - 64
 
 
-    print(padding + 'FABKEY ID:       %s' % fabkey)
-    print(padding + 'PATCH ID:    %s' % patch_id)
-    print(padding + 'TARGET ID:       %s' % target + ' (' + targets[target] + ')')
-    print(padding + 'MASK ID:     %s' % mask_id + ' (Mask %s)' % int(mask_id,16))
-    print(padding + 'CUSTOM MASK:     %s' % custom_mask + ' (%s)' % card.ReadablePrint(card.ToBinary(custom_mask)))
-    print(padding + 'MASK NAME:       %s' % card.ToBinary(mask_name))
-    print(padding + 'FUSE STATE:      %s' % fuse + ' (' + fuse_state[fuse] + ')')
-    print(padding + 'ROM INFO:    %s' % rom_info + ' (Checksum)')
-    print(padding + 'COMBO NAME:      %s-m%s.%s.%s-%s' % (targets[target], mask_id, fabkey, patch_id, card.ToBinary(mask_name)))
-    print(padding + 'MANUFACTURER:    %s' % manufacturers[manufacturer])
+    print(padding + f'FABKEY ID:       {fabkey}')
+    print(padding + f'PATCH ID:    {patch_id}')
+    print(padding + f'TARGET ID:       {target}' + ' (' + targets[target] + ')')
+    print(padding + f'MASK ID:     {mask_id}' + f' (Mask {int(mask_id, 16)})')
+    print(padding + f'CUSTOM MASK:     {custom_mask}' + f' ({card.ReadablePrint(card.ToBinary(custom_mask))})')
+    print(padding + f'MASK NAME:       {card.ToBinary(mask_name)}')
+    print(padding + f'FUSE STATE:      {fuse}' + ' (' + fuse_state[fuse] + ')')
+    print(padding + f'ROM INFO:    {rom_info}' + ' (Checksum)')
+    print(padding + f'COMBO NAME:      {targets[target]}-m{mask_id}.{fabkey}.{patch_id}-{card.ToBinary(mask_name)}')
+    print(padding + f'MANUFACTURER:    {manufacturers[manufacturer]}')
     print(padding + 'PRODUCED:    Year %s, Week %s, Build %d' % (manufacture_year, manufacture_week, manufacture_mask))
 
 def decode_jcop_lifecycle(data, padding):
@@ -182,24 +182,24 @@ def decode_jcop_lifecycle(data, padding):
     ic_perso_equip= data[76:84]
 
     print()
-    print(padding + 'IC Fabricator               %s' % ic_fab)
-    print(padding + 'IC Type                 %s' % ic_type)
-    print(padding + 'OS ID                   %s' % os_id)
-    print(padding + 'OS Release Date             %s' % os_release_date)
-    print(padding + 'OS Release Level            %s' % os_release_level)
-    print(padding + 'IC Fabrication Date         Year %s Day %s' % (ic_fab_date[0], ic_fab_date[1:4]))
-    print(padding + 'IC Serial Number            %s' % ic_serial)
-    print(padding + 'IC Batch Number             %s' % ic_batch)
-    print(padding + 'IC Module Fabricator        %s' % ic_mod_fab)
-    print(padding + 'IC Module Packaging Date        Year %s Day %s' % (ic_mod_pack_date[0], ic_mod_pack_date[1:4]))
-    print(padding + 'ICC Manufacturer            %s' % icc_man)
-    print(padding + 'IC Embedding Date           Year %s Day %s' % (ic_embed_date[0], ic_embed_date[1:4]))
-    print(padding + 'IC Pre-Personalizer         %s' % ic_pre_perso)
-    print(padding + 'IC Pre-Personalization Date     %s' % ic_pre_perso_date)
-    print(padding + 'IC Pre-Personalization Equipment    %s' % ic_pre_perso_equip)
-    print(padding + 'IC Personalizer             %s' % ic_perso)
-    print(padding + 'IC Personalization Date         Year %s Day %s' % (ic_perso_date[0], ic_perso_date[1:4]))
-    print(padding + 'IC Personalization Equipment    %s' % ic_perso_equip)
+    print(padding + f'IC Fabricator               {ic_fab}')
+    print(padding + f'IC Type                 {ic_type}')
+    print(padding + f'OS ID                   {os_id}')
+    print(padding + f'OS Release Date             {os_release_date}')
+    print(padding + f'OS Release Level            {os_release_level}')
+    print(padding + f'IC Fabrication Date         Year {ic_fab_date[0]} Day {ic_fab_date[1:4]}')
+    print(padding + f'IC Serial Number            {ic_serial}')
+    print(padding + f'IC Batch Number             {ic_batch}')
+    print(padding + f'IC Module Fabricator        {ic_mod_fab}')
+    print(padding + f'IC Module Packaging Date        Year {ic_mod_pack_date[0]} Day {ic_mod_pack_date[1:4]}')
+    print(padding + f'ICC Manufacturer            {icc_man}')
+    print(padding + f'IC Embedding Date           Year {ic_embed_date[0]} Day {ic_embed_date[1:4]}')
+    print(padding + f'IC Pre-Personalizer         {ic_pre_perso}')
+    print(padding + f'IC Pre-Personalization Date     {ic_pre_perso_date}')
+    print(padding + f'IC Pre-Personalization Equipment    {ic_pre_perso_equip}')
+    print(padding + f'IC Personalizer             {ic_perso}')
+    print(padding + f'IC Personalization Date         Year {ic_perso_date[0]} Day {ic_perso_date[1:4]}')
+    print(padding + f'IC Personalization Equipment    {ic_perso_equip}')
 
 def decode_privileges(data):
     print('(', end=' ')
@@ -258,7 +258,7 @@ def decode_gp_registry_data(data, padding, filter):
                 if item == card.GP_REG_LCS:
                     if filter == card.GP_FILTER_ASSD:
                         # mask out application specific bits
-                        itemdata= '%02x' % (int(itemdata,16) & 0x87)
+                        itemdata= f'{int(itemdata, 16) & 135:02x}'
                     print('( '+states[itemdata]+' )', end=' ')
                 if item == card.GP_REG_PRIV:
                     decode_privileges(itemdata)
@@ -271,7 +271,7 @@ def decode_gp_registry_data(data, padding, filter):
 
 card.info('jcoptool v0.1d')
 if Help or len(args) < 1:
-    print('\nUsage:\n\n\t%s [OPTIONS] <COMMAND> [ARGS] [ENC Key] [MAC Key] [KEK Key]' % sys.argv[0])
+    print(f'\nUsage:\n\n\t{sys.argv[0]} [OPTIONS] <COMMAND> [ARGS] [ENC Key] [MAC Key] [KEK Key]')
     print()
     print('\tWhere COMMAND/ARGS are one of the following combinations:')
     print()
@@ -288,7 +288,7 @@ if card.select():
     print()
     print('    Card ID: ' + card.uid)
     if card.readertype == card.READER_PCSC:
-        print('    ATS: %s (%s)' % (card.pcsc_ats,card.ReadablePrint(card.ToBinary(card.pcsc_ats))))
+        print(f'    ATS: {card.pcsc_ats} ({card.ReadablePrint(card.ToBinary(card.pcsc_ats))})')
 else:
     print('    No RFID card present')
     print()
@@ -373,7 +373,7 @@ if command == 'INFO':
             length= int(card.data[pointer:pointer + 2],16)
             pointer += 2
             if tags[item] == 'OID':
-                decodedOID, dummy= decoder.decode(card.ToBinary(item+('%02x' % length)+card.data[pointer:pointer + length * 2]))
+                decodedOID, dummy= decoder.decode(card.ToBinary(item+f'{length:02x}'+card.data[pointer:pointer + length * 2]))
                 print(decodedOID.prettyPrint())
             else:
                 if(card.data[pointer:pointer + 2]) == '06':

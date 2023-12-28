@@ -34,7 +34,7 @@ def HexArray(data):
     # first check array is all hex digits
     try:
         int(data,16)
-    except:
+    except ValueError:
         return False, []
     # check array is 4 hex digit pairs
     if len(data) != 12:
@@ -51,7 +51,7 @@ print('mifarekeys v0.1b')
 if len(sys.argv) != 3:
     print()
     print("Usage:")
-    print("\t%s <KeyA> <KeyB>" % sys.argv[0])
+    print(f"\t{sys.argv[0]} <KeyA> <KeyB>")
     print()
     print("\tCreate MifarePWD for access to Mifare protected memory on Dual Interface IC")
     print("\t(JCOP) cards. Output is DKeyA, DKeyB and MifarePWD. DKeyA and DKeyB are used as")
@@ -86,12 +86,12 @@ if not ret:
 # first left shift 1 to create a 0 trailing bit (masked to keep it a single byte)
 newkeyA= ''
 for n in range(6):
-    newkeyA += "%02X" % ((int(keyA[n],16) << 1) & 0xff)
+    newkeyA += f"{int(keyA[n], 16) << 1 & 255:02X}"
 # now create byte 6 from bit 7 of original bytes 0-5, shifted to the correct bit position
 newkeyAbyte6= 0x00
 for n in range(6):
     newkeyAbyte6 |= ((int(keyA[n],16) >> n + 1) & pow(2,7 - (n + 1)))
-newkeyA += "%02X" % newkeyAbyte6
+newkeyA += f"{newkeyAbyte6:02X}"
 # and finally add a 0x00 to the end
 newkeyA += '00'
 print()
@@ -105,10 +105,10 @@ newkeyB= '00'
 newkeyBbyte1= 0x00
 for n in range(6):
     newkeyBbyte1 |= ((int(keyB[n],16) >> 7 - (n + 1)) & pow(2,n + 1))
-newkeyB += "%02X" % newkeyBbyte1
+newkeyB += f"{newkeyBbyte1:02X}"
 # left shift 1 to create a 0 trailing bit (masked to keep it a single byte)
 for n in range(6):
-    newkeyB += "%02X" % ((int(keyB[n],16) << 1) & 0xff)
+    newkeyB += f"{int(keyB[n], 16) << 1 & 255:02X}"
 print("  DKeyB:       ", newkeyB)
 
 # now create triple-DES key
@@ -121,7 +121,7 @@ mifarePWD= des3.encrypt('\0\0\0\0\0\0\0\0')
 # reverse LSB/MSB for final output
 mifarePWDout= ''
 for n in range(len(mifarePWD)-1,-1,-1):
-    mifarePWDout += "%02X" % int(ord(mifarePWD[n]))
+    mifarePWDout += f"{int(ord(mifarePWD[n])):02X}"
 print()
 print("  MifarePWD:   ", mifarePWDout)
 print()

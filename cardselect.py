@@ -25,29 +25,33 @@
 import os
 import rfidiot
 
-try:
-    card= rfidiot.card
-except:
-    print("Couldn't open reader!")
-    os._exit(True)
-
-args= rfidiot.args
-
-card.info('cardselect v0.1m')
-# force card type if specified
-if len(args) == 1:
-    card.settagtype(args[0])
-else:
-    card.settagtype(card.ALL)
-
-if card.select():
-    print('    Card ID: ' + card.uid)
-    if card.readertype == card.READER_PCSC:
-        print('    ATR: ' + card.pcsc_atr)
-else:
-    if card.errorcode:
-        print('    '+card.ISO7816ErrorCodes[card.errorcode])
-    else:
-        print('    No card present')
+def main():
+    try:
+        card= rfidiot.card
+    except:
+        print("Couldn't open reader!")
         os._exit(True)
-os._exit(False)
+
+    args= rfidiot.args
+
+    card.info('cardselect v0.1m')
+    # force card type if specified
+    if len(args) == 1:
+        card.settagtype(args[0])
+    else:
+        card.settagtype(card.ALL)
+
+    if card.select():
+        print('    Card ID: ' + card.uid)
+        if card.readertype == card.READER_PCSC:
+            print('    ATR: ' + card.pcsc_atr)
+    else:
+        if card.errorcode:
+            print('    '+card.ISO7816ErrorCodes[card.errorcode])
+        else:
+            print('    No card present')
+            os._exit(True)
+    os._exit(False)
+
+if __name__ == '__main__':
+    main()

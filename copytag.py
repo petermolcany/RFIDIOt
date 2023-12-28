@@ -26,67 +26,71 @@ import sys
 import os
 import rfidiot
 
-try:
-    card= rfidiot.card
-except:
-    print("Couldn't open reader!")
-    os._exit(True)
+def main():
+    try:
+        card= rfidiot.card
+    except:
+        print("Couldn't open reader!")
+        os._exit(True)
 
-card.info('copytag v0.1d')
-card.select()
-print('\nID: ' + card.uid)
-print('  Reading:')
+    card.info('copytag v0.1d')
+    card.select()
+    print('\nID: ' + card.uid)
+    print('  Reading:')
 
-buffer= []
+    buffer= []
 
-card.select()
-for x in range(98):
-    if card.readblock(x):
-        print('    Block %02x: %s\r' % (x , card.data), end=' ')
-        sys.stdout.flush()
-        buffer.append(card.data)
-    else:
-        if x == 0:
-            print('Read error: ', card.ISO7816ErrorCodes[card.errorcode])
-        break
-
-if x > 0:
-    print('\nRead %d blocks' % x)
-    input('Remove source tag and hit <CR> to continue...')
-    targettype= card.tagtype
-    while 42:
-        card.waitfortag('Waiting for blank tag...')
-        print('ID: ' + card.uid)
-        if card.tagtype != targettype:
-            input('Invalid tag type! Hit <CR> to continue...')
-            continue
-        if not card.readblock(0):
-            input('Tag not readable! Hit <CR> to continue...')
-            continue
-        if len(card.data) != len(buffer[0]):
-            print('Wrong blocksize! (%d / %d)' % (len(buffer[0]),len(card.data)), end=' ')
-            input(' Hit <CR> to continue...')
-            continue
-        if input('*** Warning! Data will be overwritten! Continue (y/n)?').upper() == 'Y':
-            break
+    card.select()
+    for x in range(98):
+        if card.readblock(x):
+            print('    Block %02x: %s\r' % (x , card.data), end=' ')
+            sys.stdout.flush()
+            buffer.append(card.data)
         else:
+            if x == 0:
+                print('Read error: ', card.ISO7816ErrorCodes[card.errorcode])
+            break
+
+    if x > 0:
+        print(f'\nRead {x} blocks')
+        input('Remove source tag and hit <CR> to continue...')
+        targettype= card.tagtype
+        while 42:
+            card.waitfortag('Waiting for blank tag...')
+            print('ID: ' + card.uid)
+            if card.tagtype != targettype:
+                input('Invalid tag type! Hit <CR> to continue...')
+                continue
+            if not card.readblock(0):
+                input('Tag not readable! Hit <CR> to continue...')
+                continue
+            if len(card.data) != len(buffer[0]):
+                print(f'Wrong blocksize! ({len(buffer[0])} / {len(card.data)})', end=' ')
+                input(' Hit <CR> to continue...')
+                continue
+            if input('*** Warning! Data will be overwritten! Continue (y/n)?').upper() == 'Y':
+                break
+
             os._exit(False)
-    print('  Writing:')
-    for n in range(x):
-        print('    Block %02x: %s\r' % (n , buffer[n]), end=' ')
-        sys.stdout.flush()
-        if not card.writeblock(n, buffer[n]):
-            print('\nWrite failed!')
-    print('\n  Verifying:')
-    for n in range(x):
-        print('    Block %02x: %s' % (n , buffer[n]), end=' ')
-        if not card.readblock(n) or card.data != buffer[n]:
-            print('\nVerify failed!')
-            os._exit(True)
-        print(' OK\r', end=' ')
-        sys.stdout.flush()
-    print()
-    os._exit(False)
-else:
-    print('No data!')
-    os._exit(True)
+        print('  Writing:')
+        for n in range(x):
+            print('    Block %02x: %s\r' % (n , buffer[n]), end=' ')
+            sys.stdout.flush()
+            if not card.writeblock(n, buffer[n]):
+                print('\nWrite failed!')
+        print('\n  Verifying:')
+        for n in range(x):
+            print('    Block %02x: %s' % (n , buffer[n]), end=' ')
+            if not card.readblock(n) or card.data != buffer[n]:
+                print('\nVerify failed!')
+                os._exit(True)
+            print(' OK\r', end=' ')
+            sys.stdout.flush()
+        print()
+        os._exit(False)
+    else:
+        print('No data!')
+        os._exit(True)
+
+if __name__ == '__main__':
+    main()

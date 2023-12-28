@@ -25,43 +25,47 @@ import sys
 import os
 import rfidiot
 
-try:
-    card= rfidiot.card
-except:
-    print("Couldn't open reader!")
-    os._exit(True)
-
-args= rfidiot.args
-
-card.info('hitag2brute v0.1c')
-
-pwd= 0x00
-
-# start at specified PWD
-if len(args) == 1:
-    pwd= int(args[0],16)
-
-card.settagtype(card.ALL)
-
-if card.select():
-    print('Bruteforcing tag:', card.uid)
-else:
-    print('No tag found!')
-    os._exit(True)
-
-while 42:
-    PWD= '%08X' % pwd
-    if card.h2login(PWD):
-        print('Password is %s' % PWD)
-        os._exit(False)
-    else:
-        if not pwd % 16:
-            print(PWD + '            \r', end=' ')
-    if not card.select():
-        print('No tag found! Last try: %s\r' % PWD, end=' ')
-    else:
-        pwd= pwd + 1
-    sys.stdout.flush()
-    if pwd == 0xffffffff:
+def main():
+    try:
+        card= rfidiot.card
+    except:
+        print("Couldn't open reader!")
         os._exit(True)
-os._exit(False)
+
+    args= rfidiot.args
+
+    card.info('hitag2brute v0.1c')
+
+    pwd= 0x00
+
+    # start at specified PWD
+    if len(args) == 1:
+        pwd= int(args[0],16)
+
+    card.settagtype(card.ALL)
+
+    if card.select():
+        print('Bruteforcing tag:', card.uid)
+    else:
+        print('No tag found!')
+        os._exit(True)
+
+    while 42:
+        PWD= '%08X' % pwd
+        if card.h2login(PWD):
+            print(f'Password is {PWD}')
+            os._exit(False)
+        else:
+            if not pwd % 16:
+                print(PWD + '            ')
+        if not card.select():
+            print(f'No tag found! Last try: {PWD}')
+        else:
+            pwd= pwd + 1
+        sys.stdout.flush()
+        if pwd == 0xffffffff:
+            os._exit(True)
+    os._exit(False)
+
+if __name__ == '__main__':
+    main()

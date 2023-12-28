@@ -23,28 +23,32 @@
 import os
 import rfidiot
 
-try:
-    card= rfidiot.card
-except:
-    print("Couldn't open reader!")
-    os._exit(True)
+def main():
+    try:
+        card= rfidiot.card
+    except AttributeError:
+        print("Couldn't open reader!")
+        os._exit(True)
 
-card.info('loginall v0.1h')
+    card.info('loginall v0.1h')
 
-card.select()
-print('\ncard id: ' + card.uid)
+    card.select()
+    print('\ncard id: ' + card.uid)
 
-block = 0
+    block = 0
 
-while block < 16:
-    for X in [ 'AA', 'BB', 'FF' ]:
-        card.select()
-        print('%02x %s: ' % (block, X), end=' ')
-        if card.login(block, X, ''):
-            print("success!")
-        elif card.errorcode:
-            print("error: " + card.errorcode)
-        else:
-            print("failed")
-    block += 1
-os._exit(False)
+    while block < 16:
+        for X in [ 'AA', 'BB', 'FF' ]:
+            card.select()
+            print(f'{block:02x} {X}: ', end=' ')
+            if card.login(block, X, ''):
+                print("success!")
+            elif card.errorcode:
+                print("error: " + card.errorcode)
+            else:
+                print("failed")
+        block += 1
+    os._exit(False)
+
+if __name__ == '__main__':
+    main()

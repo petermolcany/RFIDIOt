@@ -32,12 +32,6 @@ import sys
 import os
 import rfidiot
 
-try:
-    card= rfidiot.card
-except:
-    print("Couldn't open reader!")
-    os._exit(True)
-
 args= rfidiot.args
 Help= rfidiot.help
 
@@ -50,32 +44,11 @@ READ= '02'
 RANDOM= '03'
 MIFARE_AID= 'DC4420060606'
 
-card.info('jcopmifare v0.1e')
-
-if Help or len(args) < 2:
-    print('\nUsage:\n\n\t%s [OPTIONS] <READ|WRITE|RANDOM> <MIFARE_PWD> [SECTOR] [HEX DATA]' % sys.argv[0])
-    print()
-    print('\tMIFARE_PWD should be the HEX 8 BYTE MifarePWD produced by mifarekeys.py, or the')
-    print('\tRANDOM_UID secret key.')
-    print()
-    print('\tSECTOR number must be specified for READ and WRITE operations. Note that not all')
-    print('\tsectors are WRITEable.')
-    print()
-    print('\tRANDOM will set card into RANDOM_UID mode. All future selects will return a random')
-    print('\tUID instead of the one stored in sector 0. This behaviour cannot be reversed.')
-    print()
-    print('\tHEX DATA must be 16 BYTES worth of HEX for WRITE operations.')
-    print()
-    print('\t(default NXP transport keys are both FFFFFFFFFFFF, so MifarePWD is 0B54570745FE3AE7)')
-    print('\t(sector 0 default is A0A1A2A3A4A5, so MifarePWD is 0FB3BBC7099ED432)')
-    print()
-    print('\tExample:')
-    print()
-    print('\t\t./jcopmifare.py WRITE 0B54570745FE3AE7 1 12345678123456781234567812345678')
-    print()
-    print()
-    print('\tNote that jcop_mifare_access.cap or native Mifare emulation must be active on the card.')
-    print()
+global card
+try:
+    card= rfidiot.card
+except AttributeError:
+    print("Couldn't open reader!")
     os._exit(True)
 
 def mifare_read(key,sector):
@@ -126,54 +99,86 @@ def select_mifare_app():
     return bool(card.errorcode == card.ISO_OK)
 
 def error_exit(message,error):
-    print('  %s, error number: %s' % (message,error), end=' ')
+    print(f'  {message}, error number: {error}', end=' ')
     try:
         print(card.ISO7816ErrorCodes[error])
-    except:
+    except IndexError:
         print()
     os._exit(True)
 
-if card.select():
-    print('    Card ID: ' + card.uid)
-    if card.readertype == card.READER_PCSC:
-        print('    ATR: ' + card.pcsc_atr)
-else:
-    print('    No card present')
+def main():
+    card.info('jcopmifare v0.1e')
 
-# high speed select required for ACG
-if not card.hsselect('08'):
-    print('    Could not select card for APDU processing')
+    if Help or len(args) < 2:
+        print(f'\nUsage:\n\n\t{sys.argv[0]} [OPTIONS] <READ|WRITE|RANDOM> <MIFARE_PWD> [SECTOR] [HEX DATA]')
+        print()
+        print('\tMIFARE_PWD should be the HEX 8 BYTE MifarePWD produced by mifarekeys.py, or the')
+        print('\tRANDOM_UID secret key.')
+        print()
+        print('\tSECTOR number must be specified for READ and WRITE operations. Note that not all')
+        print('\tsectors are WRITEable.')
+        print()
+        print('\tRANDOM will set card into RANDOM_UID mode. All future selects will return a random')
+        print('\tUID instead of the one stored in sector 0. This behaviour cannot be reversed.')
+        print()
+        print('\tHEX DATA must be 16 BYTES worth of HEX for WRITE operations.')
+        print()
+        print('\t(default NXP transport keys are both FFFFFFFFFFFF, so MifarePWD is 0B54570745FE3AE7)')
+        print('\t(sector 0 default is A0A1A2A3A4A5, so MifarePWD is 0FB3BBC7099ED432)')
+        print()
+        print('\tExample:')
+        print()
+        print('\t\t./jcopmifare.py WRITE 0B54570745FE3AE7 1 12345678123456781234567812345678')
+        print()
+        print()
+        print('\tNote that jcop_mifare_access.cap or native Mifare emulation must be active on the card.')
+        print()
+        os._exit(True)
+
+    if card.select():
+        print('    Card ID: ' + card.uid)
+        if card.readertype == card.READER_PCSC:
+            print('    ATR: ' + card.pcsc_atr)
+    else:
+        print('    No card present')
+
+    # high speed select required for ACG
+    if not card.hsselect('08'):
+        print('    Could not select card for APDU processing')
+        os._exit(True)
+
+    if not select_mifare_app():
+        print('  Could not select mifare applet!')
+        os._exit(True)
+
+    if args[0] == 'READ':
+        stat, data= mifare_read(args[1],args[2])
+        if not stat:
+            error_exit('Read failed', data)
+        else:
+            print('Data: ', data)
+            os._exit(False)
+
+    if args[0] == 'WRITE':
+        stat, data= mifare_write(args[1],args[2],args[3])
+        if not stat:
+            error_exit('Write failed', data)
+        else:
+            print('Write completed')
+            os._exit(False)
+
+    if args[0] == 'RANDOM':
+        stat, data= mifare_random(args[1])
+        if not stat:
+            error_exit('Random_UID mode failed', data)
+        else:
+            print('Random_UID set')
+            os._exit(False)
+
+
+
+    print("Unrecognised command:", args[0])
     os._exit(True)
 
-if not select_mifare_app():
-    print('  Could not select mifare applet!')
-    os._exit(True)
-
-if args[0] == 'READ':
-    stat, data= mifare_read(args[1],args[2])
-    if not stat:
-        error_exit('Read failed', data)
-    else:
-        print('Data: ', data)
-        os._exit(False)
-
-if args[0] == 'WRITE':
-    stat, data= mifare_write(args[1],args[2],args[3])
-    if not stat:
-        error_exit('Write failed', data)
-    else:
-        print('Write completed')
-        os._exit(False)
-
-if args[0] == 'RANDOM':
-    stat, data= mifare_random(args[1])
-    if not stat:
-        error_exit('Random_UID mode failed', data)
-    else:
-        print('Random_UID set')
-        os._exit(False)
-
-
-
-print("Unrecognised command:", args[0])
-os._exit(True)
+if __name__ == '__main__':
+    main()
