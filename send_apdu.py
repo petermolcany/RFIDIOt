@@ -23,14 +23,14 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import rfidiot
 import os
+import rfidiot
 
 try:
-        card= rfidiot.card
+    card= rfidiot.card
 except:
-        print("Couldn't open reader!")
-        os._exit(True)
+    print("Couldn't open reader!")
+    os._exit(True)
 
 card.info('send_apdu v0.1a')
 card.select()
@@ -39,12 +39,11 @@ print('  Data:')
 
 cont = True
 while cont:
-        apdu = input("enter the apdu to send now, send \'close\' to finish :")
-        if apdu == 'close':
-                cont = False
-        else:
-                r = card.pcsc_send_apdu(apdu)
-                print(card.data + card.errorcode)
+    apdu = input("enter the apdu to send now, send \'close\' to finish :")
+    if apdu == 'close':
+        cont = False
+    else:
+        r = card.pcsc_send_apdu(apdu)
+        print(card.data + card.errorcode)
 
 print('Ending now ...')
-

@@ -90,30 +90,30 @@ timeout= 1
 nfcreader= None
 
 def printoptions():
-        print('\nRFIDIOt Options:\n')
-        print('\t-d\t\tDebug on')
-        print('\t-f <num>\tUse LibNFC device number <num> (implies -R READER_LIBNFC)')
-        print('\t-g\t\tNo GUI')
-        print('\t-h\t\tPrint detailed help message')
-        print('\t-n\t\tNo Init - do not initialise hardware')
-        print('\t-N\t\tList available LibNFC devices')
-        print('\t-r <num>\tUse PCSC device number <num> (implies -R READER_PCSC)')
-        print('\t-R <type>\tReader/writer type:')
-        print('\t\t\t\tREADER_ACG:\tACG Serial')
-        print('\t\t\t\tREADER_ACS:\tPC/SC Subtype ACS')
-        print('\t\t\t\tREADER_ANDROID:\tAndroid')
-        print('\t\t\t\tREADER_DEMOTAG:\tDemoTag')
-        print('\t\t\t\tREADER_FROSCH:\tFrosch Hitag')
-        print('\t\t\t\tREADER_LIBNFC:\tlibnfc')
-        print('\t\t\t\tREADER_NONE:\tNone')
-        print('\t\t\t\tREADER_OMNIKEY:\tPC/SC Subtype OmniKey')
-        print('\t\t\t\tREADER_PCSC:\tPC/SC')
-        print('\t\t\t\tREADER_SCM:\tPC/SC Subtype SCM')
-        print('\t-l <line>\tLine to use for reader/writer')
-        print('\t-L\t\tList available PCSC devices')
-        print('\t-s <baud>\tSpeed of reader/writer')
-        print('\t-t <seconds>\tTimeout for inactivity of reader/writer')
-        print()
+    print('\nRFIDIOt Options:\n')
+    print('\t-d\t\tDebug on')
+    print('\t-f <num>\tUse LibNFC device number <num> (implies -R READER_LIBNFC)')
+    print('\t-g\t\tNo GUI')
+    print('\t-h\t\tPrint detailed help message')
+    print('\t-n\t\tNo Init - do not initialise hardware')
+    print('\t-N\t\tList available LibNFC devices')
+    print('\t-r <num>\tUse PCSC device number <num> (implies -R READER_PCSC)')
+    print('\t-R <type>\tReader/writer type:')
+    print('\t\t\t\tREADER_ACG:\tACG Serial')
+    print('\t\t\t\tREADER_ACS:\tPC/SC Subtype ACS')
+    print('\t\t\t\tREADER_ANDROID:\tAndroid')
+    print('\t\t\t\tREADER_DEMOTAG:\tDemoTag')
+    print('\t\t\t\tREADER_FROSCH:\tFrosch Hitag')
+    print('\t\t\t\tREADER_LIBNFC:\tlibnfc')
+    print('\t\t\t\tREADER_NONE:\tNone')
+    print('\t\t\t\tREADER_OMNIKEY:\tPC/SC Subtype OmniKey')
+    print('\t\t\t\tREADER_PCSC:\tPC/SC')
+    print('\t\t\t\tREADER_SCM:\tPC/SC Subtype SCM')
+    print('\t-l <line>\tLine to use for reader/writer')
+    print('\t-L\t\tList available PCSC devices')
+    print('\t-s <baud>\tSpeed of reader/writer')
+    print('\t-t <seconds>\tTimeout for inactivity of reader/writer')
+    print()
 
 # check for global overrides in local config files, in the following order:
 #   $(RFIDIOtconfig_opts)
@@ -123,76 +123,76 @@ def printoptions():
 extraopts= []
 OptsEnv= 'RFIDIOtconfig_opts'
 if OptsEnv in os.environ:
-        try:
-                configfile= open(os.environ[OptsEnv])
-                extraopts= string.split(configfile.readline())
-        except:
-                print("*** warning: config file set by ENV not found (%s) or empty!" % (os.environ[OptsEnv]))
-                print("*** not checking for other option files!")
+    try:
+        configfile= open(os.environ[OptsEnv])
+        extraopts= string.split(configfile.readline())
+    except:
+        print("*** warning: config file set by ENV not found (%s) or empty!" % (os.environ[OptsEnv]))
+        print("*** not checking for other option files!")
 else:
-        for path in ['.','/etc']:
-                try:
-                        configfile= open(path + '/RFIDIOtconfig.opts')
-                        extraopts= string.split(configfile.readline())
-                        break
-                except:
-                        pass
+    for path in ['.','/etc']:
+        try:
+            configfile= open(path + '/RFIDIOtconfig.opts')
+            extraopts= string.split(configfile.readline())
+            break
+        except:
+            pass
 # check for global override in environment variable
 OptsEnv= 'RFIDIOtconfig'
 if OptsEnv in os.environ:
-        try:
-                extraopts= string.split(os.environ[OptsEnv])
-        except:
-                print("*** warning: RFIDIOtconfig found in ENV, but no options specified!")
+    try:
+        extraopts= string.split(os.environ[OptsEnv])
+    except:
+        print("*** warning: RFIDIOtconfig found in ENV, but no options specified!")
 # ignore if commented out
 if len(extraopts) > 0:
-        if extraopts[0][0] == '#':
-                extraopts= []
+    if extraopts[0][0] == '#':
+        extraopts= []
 
 # 'args' will be set to remaining arguments (if any)
 try:
-        opts, args  = getopt.getopt(extraopts + sys.argv[1:],'df:ghnNr:R:l:Ls:t:')
+    opts, args  = getopt.getopt(extraopts + sys.argv[1:],'df:ghnNr:R:l:Ls:t:')
 
-        for o, a in opts:
-                if o == '-d':
-                        rfidiotglobals.Debug= True
-                if o == '-f':
-                        nfcreader= int(a)
-                        readertype= RFIDIOt.rfidiot.READER_LIBNFC
-                if o == '-g':
-                        nogui= True
-                if o == '-h':
-                        help= True
-                        printoptions()
-                if o == '-n':
-                        noinit= True
-                if o == '-N':
-                        readertype= RFIDIOt.rfidiot.READER_LIBNFC
-                        card= RFIDIOt.rfidiot(readernum,readertype,line,speed,timeout,rfidiotglobals.Debug,noinit,nfcreader)
-                        card.libnfc_listreaders()
-                        os._exit(True)
-                if o == '-r':
-                        readernum= a
-                        readertype= RFIDIOt.rfidiot.READER_PCSC
-                if o == '-R':
-                        try:
-                                readertype= eval(a)
-                        except:
-                                readertype= eval('RFIDIOt.rfidiot.'+a)
-                if o == '-l':
-                        line= a
-                if o == '-L':
-                        readertype= RFIDIOt.rfidiot.READER_PCSC
-                        readernum= 0
-                        card= RFIDIOt.rfidiot(readernum,readertype,line,speed,timeout,rfidiotglobals.Debug,noinit,nfcreader)
-                        card.pcsc_listreaders()
-                        os._exit(True)
-                if o == '-s':
-                        speed= int(a)
-                if o == '-t':
-                        timeout= int(a)
-        card= RFIDIOt.rfidiot(readernum,readertype,line,speed,timeout,rfidiotglobals.Debug,noinit,nfcreader)
+    for o, a in opts:
+        if o == '-d':
+            rfidiotglobals.Debug= True
+        if o == '-f':
+            nfcreader= int(a)
+            readertype= RFIDIOt.rfidiot.READER_LIBNFC
+        if o == '-g':
+            nogui= True
+        if o == '-h':
+            help= True
+            printoptions()
+        if o == '-n':
+            noinit= True
+        if o == '-N':
+            readertype= RFIDIOt.rfidiot.READER_LIBNFC
+            card= RFIDIOt.rfidiot(readernum,readertype,line,speed,timeout,rfidiotglobals.Debug,noinit,nfcreader)
+            card.libnfc_listreaders()
+            os._exit(True)
+        if o == '-r':
+            readernum= a
+            readertype= RFIDIOt.rfidiot.READER_PCSC
+        if o == '-R':
+            try:
+                readertype= eval(a)
+            except:
+                readertype= eval('RFIDIOt.rfidiot.'+a)
+        if o == '-l':
+            line= a
+        if o == '-L':
+            readertype= RFIDIOt.rfidiot.READER_PCSC
+            readernum= 0
+            card= RFIDIOt.rfidiot(readernum,readertype,line,speed,timeout,rfidiotglobals.Debug,noinit,nfcreader)
+            card.pcsc_listreaders()
+            os._exit(True)
+        if o == '-s':
+            speed= int(a)
+        if o == '-t':
+            timeout= int(a)
+    card= RFIDIOt.rfidiot(readernum,readertype,line,speed,timeout,rfidiotglobals.Debug,noinit,nfcreader)
 except getopt.GetoptError as e:
-                print("RFIDIOtconfig module ERROR: %s" % e)
-                printoptions()
-                args= []
+    print("RFIDIOtconfig module ERROR: %s" % e)
+    printoptions()
+    args= []

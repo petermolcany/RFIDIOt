@@ -1,10 +1,10 @@
 #!/usr/bin/python
 
 #  eeprom.py - display reader's eeprom settings
-# 
+#
 #  Adam Laurie <adam@algroup.co.uk>
 #  http://rfidiot.org/
-# 
+#
 #  This code is copyright (c) Adam Laurie, 2006, All rights reserved.
 #  For non-commercial use only, the following terms apply - for all other
 #  uses, please contact the author:
@@ -20,15 +20,14 @@
 #    GNU General Public License for more details.
 #
 
-
-import rfidiot
 import os
+import rfidiot
 
 try:
-        card= rfidiot.card
+    card= rfidiot.card
 except:
-        print("Couldn't open reader!")
-        os._exit(True)
+    print("Couldn't open reader!")
+    os._exit(True)
 
 card.info('eeprom v0.1e')
 print('Station:\t' + card.station())
@@ -38,5 +37,5 @@ print('Protocol3:\t' + card.PCON3())
 
 address= 0
 while address < 0xf0:
-        print('address %02x:\t%s' % (address,card.readEEPROM(address)))
-        address += 1
+    print('address %02x:\t%s' % (address,card.readEEPROM(address)))
+    address += 1

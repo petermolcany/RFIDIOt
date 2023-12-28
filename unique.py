@@ -24,18 +24,16 @@
 #    GNU General Public License for more details.
 #
 
-
-import rfidiot
 import sys
 import os
-import string
 import time
+import rfidiot
 
 try:
-        card= rfidiot.card
+    card= rfidiot.card
 except:
-        print("Couldn't open reader!")
-        os._exit(True)
+    print("Couldn't open reader!")
+    os._exit(True)
 
 args= rfidiot.args
 help= rfidiot.help
@@ -69,19 +67,19 @@ if len(args) < 1 or len(args) > 3 or help:
     os._exit(True)
 
 
-if len(args) == 1 and string.upper(args[0]) == "CLONE":
-        type= 'UNIQUE'
-        clone= True
-        card.settagtype(card.EM4x02)
-        card.waitfortag('Waiting for Unique tag...')
-        id= card.uid
-        idbin= card.UniqueToEM(card.HexReverse(id))
+if len(args) == 1 and args[0].upper() == "CLONE":
+    type= 'UNIQUE'
+    clone= True
+    card.settagtype(card.EM4x02)
+    card.waitfortag('Waiting for Unique tag...')
+    id= card.uid
+    idbin= card.UniqueToEM(card.HexReverse(id))
 else:
-        clone= False
-        if len(args[1]) != 10:
-                print('ID must be 10 HEX digits!')
-                os._exit(True)
-        id= args[1]
+    clone= False
+    if len(args[1]) != 10:
+        print('ID must be 10 HEX digits!')
+        os._exit(True)
+    id= args[1]
 
 if args[0] == 'E':
     type= 'EM4x02'
@@ -92,8 +90,8 @@ else:
         idbin= card.ToBinaryString(card.ToBinary(id))
     else:
         if not clone:
-                print('Unknown TYPE: ' + args[0])
-                os._exit(True)
+            print('Unknown TYPE: ' + args[0])
+            os._exit(True)
 
 
 out= card.Unique64Bit(idbin)
@@ -118,36 +116,36 @@ print('  Hitag2 Config Block (3): ' + H2CFB)
 print('  Data Block 4: ' + db1)
 print('  Data Block 5: ' + db2)
 
-if (len(args) == 3 and string.upper(args[2]) == 'WRITE') or clone:
-        # check for Q5 first`
+if (len(args) == 3 and args[2].upper() == 'WRITE') or clone:
+    # check for Q5 first`
+    if card.readertype == card.READER_ACG:
+        card.settagtype(card.Q5)
+        if not card.select():
+            card.settagtype(card.ALL)
+    while card.tagtype not in (card.Q5, card.HITAG2):
+        card.waitfortag('Waiting for blank tag (Q5 or Hitag2)...')
+        print('Tag ID: ' + card.uid)
+    if not clone:
+        x= input('  *** Warning! This will overwrite TAG! Proceed (y/n)? ').upper()
+        if x != 'Y':
+            os._exit(False)
+    # allow blank to settle
+    time.sleep(2)
+    print('Writing...')
+    if card.tagtype == card.Q5:
+        if not card.writeblock(0,Q5CFB) or not card.writeblock(1,db1) or not card.writeblock(2,db2):
+            print('Write failed!')
+            os._exit(True)
+    if card.tagtype == card.HITAG2:
         if card.readertype == card.READER_ACG:
-                card.settagtype(card.Q5)
-                if not card.select():
-                        card.settagtype(card.ALL)
-        while not (card.tagtype == card.Q5 or card.tagtype == card.HITAG2):
-                card.waitfortag('Waiting for blank tag (Q5 or Hitag2)...')
-                print('Tag ID: ' + card.uid)
-        if not clone:
-                x= string.upper(input('  *** Warning! This will overwrite TAG! Proceed (y/n)? '))
-                if x != 'Y':
-                        os._exit(False)
-        # allow blank to settle
-        time.sleep(2)
-        print('Writing...')
-        if card.tagtype == card.Q5:
-                if not card.writeblock(0,Q5CFB) or not card.writeblock(1,db1) or not card.writeblock(2,db2):
-                        print('Write failed!')
-                        os._exit(True)
-        if card.tagtype == card.HITAG2:
-                if card.readertype == card.READER_ACG:
-                        card.login('','',card.HITAG2_TRANSPORT_RWD)
-                if not card.writeblock(3,H2CFB) or not card.writeblock(4,db1) or not card.writeblock(5,db2):
-                        print('Write failed!')
-                        os._exit(True)
-        card.settagtype(card.EM4x02)
-        card.select()
-        print('Card ID: ' + card.uid)
-        print('  Unique ID: ' + card.EMToUnique(card.uid))
-        print('Done!')
-        card.settagtype(card.ALL)
+            card.login('','',card.HITAG2_TRANSPORT_RWD)
+        if not card.writeblock(3,H2CFB) or not card.writeblock(4,db1) or not card.writeblock(5,db2):
+            print('Write failed!')
+            os._exit(True)
+    card.settagtype(card.EM4x02)
+    card.select()
+    print('Card ID: ' + card.uid)
+    print('  Unique ID: ' + card.EMToUnique(card.uid))
+    print('Done!')
+    card.settagtype(card.ALL)
 os._exit(False)

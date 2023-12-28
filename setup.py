@@ -19,4 +19,3 @@ setup  (name        = 'rfidiot',
         packages= packages,
         scripts = scripts
        )
-

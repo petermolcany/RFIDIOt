@@ -1,4 +1,3 @@
-# -*- coding: iso-8859-15 -*-
 # ISO-3166 alpha country codes - ver 1
 ISO3166CountryCodesAlpha= { "ABW":"Aruba",\
                          "AFG":"Afghanistan",\

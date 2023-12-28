@@ -20,15 +20,14 @@
 #    GNU General Public License for more details.
 #
 
-
-import rfidiot
 import os
+import rfidiot
 
 try:
-        card= rfidiot.card
+    card= rfidiot.card
 except:
-        print("Couldn't open reader!")
-        os._exit(True)
+    print("Couldn't open reader!")
+    os._exit(True)
 
 card.info('readtag v0.1f')
 card.select()
@@ -37,16 +36,16 @@ print('  Data:')
 
 card.select()
 for x in range(255):
-        print('    Block %02x:' % x, end=' ')
-        if card.readblock(x):
-                print(card.data, end=' ')
-                print(card.ReadablePrint(card.ToBinary(card.data)))
-        else:
-                print('read error: %s, %s' % (card.errorcode, card.ISO7816ErrorCodes[card.errorcode]))
+    print('    Block %02x:' % x, end=' ')
+    if card.readblock(x):
+        print(card.data, end=' ')
+        print(card.ReadablePrint(card.ToBinary(card.data)))
+    else:
+        print('read error: %s, %s' % (card.errorcode, card.ISO7816ErrorCodes[card.errorcode]))
 
 print('\n    Total blocks: ', end=' ')
 print(x)
 if x > 0:
-        os._exit(False)
+    os._exit(False)
 else:
-        os._exit(True)
+    os._exit(True)

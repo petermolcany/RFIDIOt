@@ -20,15 +20,14 @@
 #    GNU General Public License for more details.
 #
 
-
-import rfidiot
 import os
+import rfidiot
 
 try:
-        card= rfidiot.card
+    card= rfidiot.card
 except:
-        print("Couldn't open reader!")
-        os._exit(True)
+    print("Couldn't open reader!")
+    os._exit(True)
 
 card.info('loginall v0.1h')
 
@@ -38,14 +37,14 @@ print('\ncard id: ' + card.uid)
 block = 0
 
 while block < 16:
-        for X in [ 'AA', 'BB', 'FF' ]:
-                card.select()
-                print('%02x %s: ' % (block, X), end=' ')
-                if card.login(block, X, ''):
-                        print("success!")
-                elif card.errorcode:
-                        print("error: " + card.errorcode)
-                else:
-                        print("failed")
-        block += 1
+    for X in [ 'AA', 'BB', 'FF' ]:
+        card.select()
+        print('%02x %s: ' % (block, X), end=' ')
+        if card.login(block, X, ''):
+            print("success!")
+        elif card.errorcode:
+            print("error: " + card.errorcode)
+        else:
+            print("failed")
+    block += 1
 os._exit(False)
