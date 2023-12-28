@@ -108,21 +108,21 @@ class rfidiot:
                                         print('Could not create connection to %s' % self.readername)
                                         os._exit(True)
                                 # determine PCSC subtype
-                                if string.find(self.readername,'OMNIKEY') == 0:
+                                if self.readername.find('OMNIKEY') == 0:
                                         self.readersubtype= self.READER_OMNIKEY
                                 else:
-                                        if string.find(self.readername,'SDI010') == 0:
+                                        if self.readername.find('SDI010') == 0:
                                                 self.readersubtype= self.READER_SCM
                                         else:
-                                                if string.find(self.readername,'ACS ACR122U PICC') == 0:
+                                                if self.readername.find('ACS ACR122U PICC') == 0:
                                                         self.readersubtype= self.READER_ACS
                                                         self.pcsc_protocol= smartcard.scard.SCARD_PROTOCOL_T1
                                                         self.hcard = None
-                                                elif string.find(self.readername,'ACS ACR1255U-J1 PICC') == 0:
+                                                elif self.readername.find('ACS ACR1255U-J1 PICC') == 0:
                                                         self.readersubtype= self.READER_PCSC
                                                         self.pcsc_protocol= smartcard.scard.SCARD_PROTOCOL_T1
                                                         self.hcard = None
-                                                elif string.find(self.readername,'ACS') == 0:
+                                                elif self.readername.find('ACS') == 0:
                                                         self.readersubtype= self.READER_ACS
                                                         self.pcsc_protocol= smartcard.scard.SCARD_PROTOCOL_T0
                                                         self.hcard = None
@@ -934,7 +934,7 @@ class rfidiot:
                 if self.readertype == self.READER_ACG:
                         # ACG HF reader uses 't' for 'all', LF uses 'a'
                         if type == self.ALL:
-                                if string.find(self.readername,'LFX') == 0:
+                                if self.readername.find('LFX') == 0:
                                         type= 'a'
                                 else:
                                         type= 't'
@@ -1053,7 +1053,7 @@ class rfidiot:
                                 if not self.readersubtype == self.READER_ACS:
                                         self.tagtype= self.PCSCGetTagType(self.pcsc_atr)
                                 # pcsc returns ISO15693 tags LSByte first, so reverse
-                                if string.find(self.tagtype,'ISO 15693') >= 0:
+                                if self.tagtype.find('ISO 15693') >= 0:
                                         self.data= self.uid= self.HexByteReverse(self.data)
                                 return True
                         else:
@@ -1500,7 +1500,7 @@ class rfidiot:
         def iso_7816_select_file(self,file,control,options):
                 "7816 select file"
                 ins= 'SELECT_FILE'
-                lc= '%02x' % (len(file) / 2)
+                lc= '%02x' % (len(file) // 2)
                 p1= control
                 p2= options
                 data= file
