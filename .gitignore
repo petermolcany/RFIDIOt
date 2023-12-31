@@ -1,2 +1,4 @@
 *.pyc
 build/
+tmp/
+rfidiot/traceit.py

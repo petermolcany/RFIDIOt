@@ -28,7 +28,7 @@ import rfidiot
 def main():
     try:
         card= rfidiot.card
-    except:
+    except AttributeError:
         print("Couldn't open reader!")
         os._exit(True)
 
@@ -54,7 +54,7 @@ def main():
     if prox == card.HID_PROX_H10301:
         fc= card.pcsc_atr[7:10]
         cn= card.pcsc_atr[11:16]
-        octal= '%o' % int(card.pcsc_atr[7:16])
+        octal= f'{int(card.pcsc_atr[7:16]):o}'
 
     # H10301 - 26 bit (FAC + CN) (ATR in HEX)
     if prox == card.HID_PROX_H10301_H:
@@ -64,13 +64,13 @@ def main():
         binary= binary[:-1]
         fc= int(binary[:8],2)
         cn= int(binary[8:],2)
-        octal= '%o' % int(card.pcsc_atr[6:],16)
+        octal= f'{int(card.pcsc_atr[6:], 16):o}'
 
     # H10302 - 37 bit (CN)
     if prox == card.HID_PROX_H10302:
         fc= 'n/a'
         cn= card.pcsc_atr[6:18]
-        octal= '%o' % int(card.pcsc_atr[6:18])
+        octal= f'{int(card.pcsc_atr[6:18]):o}'
 
     # H10302 - 37 bit (CN) (ATR in HEX)
     if prox == card.HID_PROX_H10302_H:
@@ -80,25 +80,25 @@ def main():
         binary= binary[8:]
         binary= binary[:-1]
         cn= int(binary,2)
-        octal= '%o' % int(card.pcsc_atr[6:],16)
+        octal= f'{int(card.pcsc_atr[6:], 16):o}'
 
     # H10304 - 37 bit (FAC + CN)
     if prox == card.HID_PROX_H10304:
         fc= card.pcsc_atr[7:12]
         cn= card.pcsc_atr[12:18]
-        octal= '%o' % int(card.pcsc_atr[7:18])
+        octal= f'{int(card.pcsc_atr[7:18]):o}'
 
     # H10320 - 32 bit clock/data card
     if prox == card.HID_PROX_H10320:
         fc= 'n/a'
         cn= card.pcsc_atr[6:14]
-        octal= '%o' % int(card.pcsc_atr[6:14])
+        octal= f'{int(card.pcsc_atr[6:14]):o}'
 
     # Corp 1000 - 35 bit (CIC + CN)
     if prox == card.HID_PROX_CORP1K:
         fc= card.pcsc_atr[6:10]
         cn= card.pcsc_atr[10:18]
-        octal= '%o' % int(card.pcsc_atr[6:18])
+        octal= f'{int(card.pcsc_atr[6:18]):o}'
 
     print()
     print('    Facility Code:', fc)

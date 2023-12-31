@@ -28,7 +28,7 @@ import rfidiot
 def main():
     try:
         card= rfidiot.card
-    except:
+    except AttributeError:
         print("Couldn't open reader!")
         os._exit(True)
 
@@ -51,7 +51,7 @@ def main():
         os._exit(True)
 
     while 42:
-        PWD= '%08X' % pwd
+        PWD= f'{pwd:08X}'
         if card.h2login(PWD):
             print(f'Password is {PWD}')
             os._exit(False)

@@ -21,8 +21,13 @@
 #    GNU General Public License for more details.
 #
 
+# from rfidiot import traceit
+# import sys
+# sys.setprofile(traceit.tracefunc)
+
 import sys
 import os
+import binascii
 from operator import xor, and_
 from tkinter import *
 from Crypto.Hash import SHA
@@ -122,7 +127,7 @@ TAG_FID=  {EF_COM:'011E',\
        EF_SOD:'011D'}
 
 # Filesystem paths
-tempfiles= '/tmp/'
+tempfiles= './tmp/'
 filespath= ''
 
 # Data Group filenames for local storage
@@ -161,7 +166,7 @@ FAC= '46414300'
 DG2_ELEMENTS= {EF_DG2:'EF.DG2',\
            '7f61':'Biometric Information Group Template',\
            '02':'Integer - Number of instances of this type of biometric',\
-           '7f60':'1st Biometric Information Template',\
+           '7f60':'Biometric Information Template',\
            'a1':'Biometric Header Template (BHT)',\
            '80':'ICAO header version [01 00] (Optional) - Version of the CBEFF patron header format',\
            '81':'Biometric type (Optional)',\
@@ -173,7 +178,6 @@ DG2_ELEMENTS= {EF_DG2:'EF.DG2',\
            '88':'Format type (Mandatory)',\
            BDB:'Biometric data (encoded according to Format Owner) also called the biometric data block (BDB).',\
            BDB1:'Biometric data (encoded according to Format Owner) also called the biometric data block (BDB).',\
-           '7f60':'2nd Biometric Information Template',\
            FAC:'Format Identifier ASCII FAC\0'}
 # Data Group 2 field types
 TEMPLATE= 0
@@ -192,8 +196,7 @@ DG2_TYPE= {EF_DG2:TEMPLATE,\
          '87':SUB,\
          '88':SUB,\
          '5f2e':TEMPLATE,\
-         '7f2e':TEMPLATE,\
-         '7f60':TEMPLATE}
+         '7f2e':TEMPLATE,}
 
 # ISO 19794_5 (Biometric identifiers)
 ISO19794_5_GENDER= { '00':'Unpecified',\
@@ -298,13 +301,13 @@ num= []
 map= []
 brnum= 0
 
-def mrzspaces(data, fill):
+def mrzspaces(mrz_data, fill):
     out= ''
-    for x in range(len(data)):
-        if data[x] == '<':
+    for mrz_char in mrz_data:
+        if mrz_char == '<':
             out += fill
         else:
-            out += data[x]
+            out += mrz_char
     return out
 
 Displayed= False
@@ -392,7 +395,7 @@ def secure_select_file(keyenc, keymac,file):
     else:
         return False, passport.errorcode
 
-def secure_read_binary(keymac,bytes,offset):
+def secure_read_binary(keymac,num_bytes,offset):
     "secure read binary data"
     global SSC
 
@@ -401,7 +404,7 @@ def secure_read_binary(keymac,bytes,offset):
     hexoffset= f'{offset:04x}'
     p1= hexoffset[0:2]
     p2= hexoffset[2:4]
-    le= f'{bytes:02x}'
+    le= f'{num_bytes:02x}'
     command= passport.PADBlock(passport.ToBinary(cla + ins + p1 + p2))
     do97= passport.ToBinary(passport.DO97 + le)
     m= command + do97
@@ -420,7 +423,7 @@ def secure_read_binary(keymac,bytes,offset):
     if passport.send_apdu('','','','',cla,ins,p1,p2,lc,data,le):
         out= passport.data
     if DEBUG:
-        print('Secure Read Binary (%02d bytes): ' % bytes, end=' ')
+        print('Secure Read Binary (%02d bytes): ' % num_bytes, end=' ')
     if passport.errorcode == APDU_OK:
         if DEBUG:
             print('OK:', out)
@@ -479,12 +482,12 @@ def check_cc(key,rapdu):
         os._exit(True)
 
 def decode_ef_com(data):
+    "display contents of EF.COM"
     TAG_PAD= '80'
 
     # set up array for Data Groups to be read
     ef_groups= []
 
-    "display contents of EF.COM"
     hexdata= passport.ToHex(data)
     # skip header
     pos= 2
@@ -508,7 +511,7 @@ def decode_ef_com(data):
                     length= asn1datalength(hexdata[pos:])
                     print(length)
                     pos += asn1fieldlength(hexdata[pos:])
-                    for n in range(length):
+                    for _ in range(length):
                         print('      Data Group: ', end=' ')
                         print(hexdata[pos:pos+2] + ' (' + TAG_NAME[hexdata[pos:pos+2]] + ')')
                         ef_groups.append(hexdata[pos:pos+2])
@@ -534,7 +537,7 @@ def read_file(file):
         return False, ''
     data= passport.data
     # get file length
-    tag= data[:2]
+    #tag= data[:2] # Unused
     datalen= asn1datalength(data[2:])
     print('File Length:', datalen)
     # deduct length field and header from what we've already read
@@ -601,11 +604,11 @@ def secure_read_file(keyenc,keymac,file):
 
     # get file length
     do87hex= passport.ToHex(decdo87)
-    tag= do87hex[:2]
+    #tag= do87hex[:2] # Unused
     datalen= asn1datalength(do87hex[2:])
     print('File Length:', datalen)
     # deduct length field and header from what we've already read
-    readlen= datalen - (3 - asn1fieldlength(do87hex[2:]) / 2)
+    readlen= datalen - (3 - asn1fieldlength(do87hex[2:]) // 2)
     print('Remaining data length:', readlen)
     # secure read remaining bytes
     while readlen > 0:
@@ -634,7 +637,7 @@ def decode_ef_dg1(data):
     global FieldLengths
     global FieldKeys
 
-    length= int(passport.ToHex(data[4]),16)
+    length= int(passport.ToHex([data[4]]),16)
     print('Data Length: ', end=' ')
     print(length)
     pointer= 5
@@ -642,7 +645,7 @@ def decode_ef_dg1(data):
     while pointer < len(data):
         if data[pointer] == chr(0x80):
             break
-        out += f'{chr(int(passport.ToHex(data[pointer]), 16))}'
+        out += f'{chr(int(passport.ToHex([data[pointer]]), 16))}'
         pointer += 1
     print('  Decoded Data: ' + out)
     DocumentType= out[0:2]
@@ -694,7 +697,9 @@ def decode_ef_dg2(data):
         decoded= False
         # check for presence of tags
         for length in 4,2:
-            if datahex[position:position + length] in DG2_ELEMENTS:
+            #print(f"Start index: {position}") #FIXME debug output
+            #print(f"Start index: {position + length}") #FIXME debug output
+            if datahex[int(position):int(position + length)] in DG2_ELEMENTS:
                 decoded= True
                 tag= datahex[position:position + length]
                 print('  Tag:', tag, '('+DG2_ELEMENTS[tag]+')', '@', position/2, end=' ')
@@ -781,7 +786,9 @@ def decode_ef_dg2(data):
                         else:
                             filename = f'{tempfiles}EF_DG2.{Filetype}'
                         img= open(filename,'wb+')
-                        img.write(data[position / 2:startposition + fieldlength])
+                        #print(f"Start index: {position // 2}") #FIXME debug output
+                        #print(f"End index: {startposition + fieldlength}") #FIXME debug output
+                        img.write(data[position // 2:int(startposition + fieldlength)])
                         img.flush()
                         img.close()
                         print(f'     JPEG image stored in {filename}')
@@ -1000,7 +1007,8 @@ def bruteno(init):
 
 try:
     passport= rfidiot.card
-except:
+except AttributeError:
+    print("Couldn't open reader!")
     os._exit(True)
 
 args= rfidiot.args
@@ -1024,7 +1032,7 @@ SETBAC=False
 UNSETBAC=False
 PACE= False
 
-def help():
+def display_help():
     print()
     print('Usage:')
     print('\t' + sys.argv[0] + ' [OPTIONS] <MRZ (Lower)|PLAIN|CHECK|[PATH]> [WRITE|WRITELOCK|SLOWBRUTE]')
@@ -1049,17 +1057,17 @@ def help():
     os._exit(True)
 
 if len(args) == 0 or Help:
-    help()
+    display_help()
 
 arg0= args[0].upper()
 
 if not(len(arg0) == 44 or len(arg0) == 21 or len(arg0) == 90 or arg0 == 'TEST' or arg0 == 'CHECK' or arg0 == 'PLAIN' or arg0 == 'SETBAC' or arg0 == 'UNSETBAC' or os.access(args[0],os.F_OK)) or len(args) > 2:
-    help()
+    display_help()
 
 if len(args) == 2:
     arg1= args[1].upper()
     if not (arg1 == 'WRITE' or arg1 == 'WRITELOCK' or arg1 == 'SLOWBRUTE'):
-        help()
+        display_help()
 
 print()
 
@@ -1071,7 +1079,7 @@ if os.access(args[0],os.F_OK):
         filespath += '/'
     try:
         passfile= open(filespath + 'EF_COM.BIN','rb')
-    except:
+    except OSError:
         print(f"Can't open {filespath + 'EF_COM.BIN'}")
         os._exit(True)
     data= passfile.read()
@@ -1230,7 +1238,7 @@ if not FILES and BAC:
             print('Corrected MRZ: ' + passport.MRPnumber + passport.MRPnumbercd + passport.MRPnationality + passport.MRPdob + passport.MRPdobcd + passport.MRPsex + passport.MRPexpiry + passport.MRPexpirycd + passport.MRPoptional + passport.MRPoptionalcd+passport.MRPcompsoitecd)
         print('Key MRZ Info (kmrz): ' + kmrz)
         print()
-        kseedhash= SHA.new(kmrz)
+        kseedhash= SHA.new(kmrz.encode())
         kseed= kseedhash.digest()[:16]
         if DEBUG:
             print('Kseed (SHA1 hash digest of kmrz): ' + kseedhash.hexdigest()[:32])
@@ -1267,7 +1275,7 @@ if not FILES and BAC:
             print('Generate local random Challenge (Kifd): ' + Kifd)
             print()
 
-        S= passport.ToBinary(rnd_ifd + rnd_icc + Kifd)
+        S= binascii.unhexlify(rnd_ifd + rnd_icc + Kifd)
 
         if DEBUG or TEST:
             print('S: ', end=' ')
@@ -1277,7 +1285,7 @@ if not FILES and BAC:
             print('Kenc: ', end=' ')
             passport.HexPrint(Kenc)
 
-
+        #print(f'Kenc: {type(Kenc)} {Kenc}')
         tdes= DES3.new(Kenc,DES.MODE_CBC,passport.DES_IV)
         Eifd= tdes.encrypt(S)
         if DEBUG or TEST:
@@ -1316,7 +1324,7 @@ if not FILES and BAC:
             print('Auth message: ' + resp)
             print('Auth MAC: ' + respmac + ' (verified)')
         tdes= DES3.new(Kenc,DES.MODE_CBC,passport.DES_IV)
-        decresp= passport.ToHex(tdes.decrypt(passport.ToBinary(resp)))
+        decresp= passport.ToHex(tdes.decrypt(binascii.unhexlify(resp)))
         if DEBUG or TEST:
             print('Decrypted Auth Response: ' + decresp)
             print('Decrypted rnd_icc: ' + decresp[:16])
@@ -1349,7 +1357,7 @@ if not FILES and BAC:
     print('Generate session keys: ')
     print()
     kseedhex= f"{xor(int(Kifd, 16), int(kicc, 16)):032x}"
-    kseed= passport.ToBinary(kseedhex)
+    kseed= binascii.unhexlify(kseedhex)
     print('Kifd XOR Kicc (kseed): ', end=' ')
     passport.HexPrint(kseed)
     KSenc= passport.DESKey(kseed,passport.KENC,16)
@@ -1448,7 +1456,7 @@ for tag in eflist:
     else:
         try:
             passfile= open(filespath+TAG_FILE[tag],'rb')
-        except:
+        except OSError:
             print(f"*** Warning! Can't open {filespath}"+TAG_FILE[tag])
             continue
         data= passfile.read()
@@ -1467,7 +1475,7 @@ for tag in eflist:
         tag= sodhex[:2]
         fieldlength= asn1fieldlength(sodhex[2:])
         outfile= open(tempfiles+"EF_SOD.TMP",'wb+')
-        outfile.write(data[1+fieldlength/2:])
+        outfile.write(data[1+fieldlength//2:])
         outfile.flush()
         outfile.close()
         exitstatus= os.system(f"openssl pkcs7 -text -print_certs -in {tempfiles}EF_SOD.TMP -inform DER")
@@ -1559,7 +1567,7 @@ if Jmrtd:
         else:
             try:
                 passfile= open(filespath+TAG_FILE[tag],'rb')
-            except:
+            except OSError:
                 print(f"*** Warning! Can't open {filespath}"+TAG_FILE[tag])
                 continue
             data= passfile.read()
@@ -1652,9 +1660,9 @@ if not Nogui:
         Label(frame, text=mrz[60:], font= fonta, justify= 'center').grid(row= row, columnspan= 4)
         row += 1
     else:
-        Label(frame, text='  ' + mrz[:len(mrz) / 2], font= fonta, justify= 'left').grid(row= row, sticky= W, columnspan= 4)
+        Label(frame, text='  ' + mrz[:len(mrz) // 2], font= fonta, justify= 'left').grid(row= row, sticky= W, columnspan= 4)
         row += 1
-        Label(frame, text='  ' + mrz[len(mrz) / 2:], font= fonta, justify= 'left').grid(row= row, sticky= W, columnspan= 4)
+        Label(frame, text='  ' + mrz[len(mrz) // 2:], font= fonta, justify= 'left').grid(row= row, sticky= W, columnspan= 4)
         row += 1
     if Display_DG7:
         im = Image.open(tempfiles + 'EF_DG7.' + Filetype)

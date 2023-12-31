@@ -28,7 +28,7 @@ import rfidiot
 def main():
     try:
         card= rfidiot.card
-    except:
+    except AttributeError:
         print("Couldn't open reader!")
         os._exit(True)
 

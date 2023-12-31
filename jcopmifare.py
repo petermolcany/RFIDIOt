@@ -56,8 +56,8 @@ def mifare_read(key,sector):
     ins= INS
     p1= P1
     p2= READ
-    data= key + '%02X' % int(sector)
-    lc= '%02X' % (len(data) / 2)
+    data= key + f'{int(sector):02X}'
+    lc= f'{len(data) / 2:02X}'
     le= '10'
 
     if card.send_apdu('','','','',cla,ins,p1,p2,lc,data,le):
@@ -69,8 +69,8 @@ def mifare_write(key,sector,sectordata):
     ins= INS
     p1= P1
     p2= WRITE
-    data= key + sectordata + '%02X' % int(sector)
-    lc= '%02X' % (len(data) / 2)
+    data= key + sectordata + f'{int(sector):02X}'
+    lc= f'{len(data) / 2:02X}'
 
     if card.send_apdu('','','','',cla,ins,p1,p2,lc,data,''):
         return True, card.data
@@ -82,7 +82,7 @@ def mifare_random(key):
     p1= P1
     p2= RANDOM
     data= key
-    lc= '%02X' % (len(data) / 2)
+    lc= f'{len(data) / 2:02X}'
 
     if card.send_apdu('','','','',cla,ins,p1,p2,lc,data,''):
         return True, card.data
@@ -94,7 +94,7 @@ def select_mifare_app():
     p1= '04'
     p2= '0C'
     data= MIFARE_AID
-    lc= '%02X' % (len(data) / 2)
+    lc= f'{len(data) / 2:02X}'
     card.send_apdu('','','','','',ins,p1,p2,lc,data,'')
     return bool(card.errorcode == card.ISO_OK)
 

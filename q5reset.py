@@ -26,7 +26,7 @@ import rfidiot
 
 try:
     card= rfidiot.card
-except:
+except AttributeError:
     print("Couldn't open reader!")
     os._exit(True)
 
@@ -74,8 +74,8 @@ if args[0] == 'CONTROL':
         if len(args) > 1:
             if not args[1] == 'ID':
                 out= card.Unique64Bit(card.HexToQ5(args[1] + '00'))
-                B1= '%08x' % int(out[:32],2)
-                B2= '%08x' % int(out[32:64],2)
+                B1= f'{int(out[:32], 2):08x}'
+                B2= f'{int(out[32:64], 2):08x}'
             if not card.writeblock(1,B1) or not card.writeblock(2,B2):
                 print('Write failed!')
                 os._exit(True)

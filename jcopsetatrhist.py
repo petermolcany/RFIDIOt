@@ -61,8 +61,8 @@ def jcop_set_atr_hist(atr_bytes):
     ins= 'ATR_HIST'
     p1= P1
     p2= P2
-    data= '%02X' % (len(atr_bytes) / 2) + atr_bytes
-    lc= '%02X' % (len(data) / 2)
+    data= f'{len(atr_bytes) / 2:02X}' + atr_bytes
+    lc= f'{len(data) / 2:02X}'
     if card.send_apdu('','','','',cla,ins,p1,p2,lc,data,''):
         return True, card.data
     return False, card.errorcode
@@ -73,7 +73,7 @@ def select_atrhist_app():
     p1= '04'
     p2= '0C'
     data= JCOP_ATR_AID
-    lc= '%02X' % (len(data) / 2)
+    lc= f'{len(data) / 2:02X}'
     card.send_apdu('','','','','',ins,p1,p2,lc,data,'')
     return bool(card.errorcode == card.ISO_OK)
 

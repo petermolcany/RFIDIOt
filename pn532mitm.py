@@ -37,7 +37,7 @@ def connect_to(host,port,type):
     first= True
     while 42:
         peer.settimeout(random.randint(1,10))
-        print('  Paging %s %s            \r' % (host, port), end=' ')
+        print(f'  Paging {host} {port}            ')
         sys.stdout.flush()
         time.sleep(1)
         try:
@@ -57,7 +57,7 @@ def connect_to(host,port,type):
             print(exc)
             os._exit(True)
         try:
-            print('  Listening for REMOTE on port %s          \r' % port, end=' ')
+            print(f'  Listening for REMOTE on port {port}          ')
             sys.stdout.flush()
             if first:
                 peer.bind(('0.0.0.0',port))
@@ -84,12 +84,12 @@ def connect_to(host,port,type):
 # send data with 3 digit length and 2 digit CRC
 def send_data(host, data):
     lrc= 0
-    length= '%03x' % (len(data) + 2)
+    length= f'{len(data) + 2:03x}'
     for x in length + data:
         lrc= operator.xor(lrc,ord(x))
     host.send(length)
     host.send(data)
-    host.send('%02x' % lrc)
+    host.send(f'{lrc:02x}')
 
 # receive data of specified length and check CRC
 def recv_data(host):
@@ -113,7 +113,8 @@ def recv_data(host):
 
 try:
     card= rfidiot.card
-except:
+except AttributeError:
+    print("Couldn't open reader!")
     os._exit(True)
 
 args= rfidiot.args
@@ -161,19 +162,19 @@ if len(args) > 1:
         if not x == 'Y':
             os._exit(True)
         logfile.close()
-    except:
+    except OSError:
         pass
     try:
         logfile= open(args[1],'w')
         logging= True
-    except:
+    except OSError:
         print("  Couldn't create logfile:", args[1])
         os._exit(True)
 
 try:
     if args[2] == 'QUIET':
         quiet= True
-except:
+except IndexError:
     quiet= False
 
 if len(args) < 1:
@@ -279,15 +280,15 @@ print()
 felica= ['01fea2a3a4a5a6a7c0c1c2c3c4c5c6c7ffff']
 nfcid=  ['aa998877665544332211']
 try:
-    lengt= ['%02x' % (len(args[6]) / 2)]
+    lengt= [f'{len(args[6]) / 2:02x}']
     gt= [args[6]]
-except:
+except IndexError:
     lengt= ['00']
     gt= ['']
 try:
-    lentk= ['%02x' % (len(args[7]) / 2)]
+    lentk= [f'{len(args[7]) / 2:02x}']
     tk= [args[7]]
-except:
+except IndexError:
     lentk= ['00']
     tk= ['']
 
@@ -329,7 +330,7 @@ if remote:
 mode= int(data[4:6],16)
 baudrate= mode & 0x70
 print('  Emulator activated:')
-print('     UID: 08%s' % uid[0])
+print(f'     UID: 08{uid[0]}')
 print('    Baudrate:', PN532_BAUDRATES[baudrate])
 print('    Mode:', end=' ')
 if mode & 0x08:
@@ -383,7 +384,7 @@ try:
                 print('  Logging started...')
                 started= True
         if logging:
-            logfile.write('<< %s\n' % data[6:])
+            logfile.write(f'<< {data[6:]}\n')
             logfile.flush()
         # relay command to tag
         if not remote or remote_type == 'EMULATOR':
@@ -400,7 +401,7 @@ try:
         if not quiet:
             print('>>', data, errorcode)
         if logging:
-            logfile.write('>> %s %s\n' % (data,errorcode))
+            logfile.write(f'>> {data} {errorcode}\n')
             logfile.flush()
         # relay tag's response back via emulator
         if not remote or remote_type == 'READER':

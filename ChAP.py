@@ -25,6 +25,8 @@ along with scard-python; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 
+# TODO: make it so everything doesn't use global vars, use parameters to each function instead
+
 import getopt
 import sys
 from operator import xor
@@ -277,7 +279,7 @@ def hexprint(data):
     index= 0
 
     while index < len(data):
-        print('%02x' % data[index], end=' ')
+        print(f'{data[index]:02x}', end=' ')
         index += 1
     print()
 
@@ -330,9 +332,9 @@ def decode_pse(data):
     indent= ''
 
     if OutputFiles:
-        file= open('%s-PSE.HEX' % CurrentAID,'w')
+        file= open(f'{CurrentAID}-PSE.HEX','w')
         for item in data:
-            file.write('%02X' % item)
+            file.write(f'{item:02X}')
         file.flush()
         file.close()
 
@@ -356,7 +358,7 @@ def decode_pse(data):
                 print(indent + '  Unrecognised TAG:', end=' ')
                 hexprint(data[index:])
                 return
-        print(indent + '  %0x:' % tag, TAGS[tag][0], end=' ')
+        print(indent + f'  {tag:0x}:', TAGS[tag][0], end=' ')
         if TAGS[tag][2] == VALUE:
             itemlength= 1
             offset= 0
@@ -378,13 +380,13 @@ def decode_pse(data):
                 #decode_ber_tlv_field(data[index + taglen + offset:])
             if TAGS[tag][1] == BINARY or TAGS[tag][1] == VALUE:
                 if TAGS[tag][2] != TEMPLATE or Verbose:
-                    print('%02x' % data[index + taglen + offset], end=' ')
+                    print(f'{data[index + taglen + offset]:02x}', end=' ')
             else:
                 if TAGS[tag][1] == NUMERIC:
-                    out += '%02x' % data[index + taglen + offset]
+                    out += f'{data[index + taglen + offset]:02x}'
                 else:
                     if TAGS[tag][1] == TEXT:
-                        out += "%c" % data[index + taglen + offset]
+                        out += f"{data[index + taglen + offset]:c}"
                     if TAGS[tag][1] == MIXED:
                         mixedout.append(data[index + taglen + offset])
             itemlength -= 1
@@ -427,7 +429,7 @@ def bruteforce_primitives():
         for y in range(256):
             status, _, response= get_primitive([x,y])
             if status:
-                print('Primitive %02x%02x: ' % (x,y))
+                print(f'Primitive {x:02x}{y:02x}: ')
                 if response:
                     hexprint(response)
                     textprint(response)
@@ -486,7 +488,7 @@ def bruteforce_aids(_):
                 #aidb= aid + [x]
                 aidb= [x,y,0x00,0x00,z]
                 if Verbose:
-                    print('\r  %02x %02x %02x %02x %02x' % (x,y,0x00,0x00,z), end=' ')
+                    print(f'\r  {x:02x} {y:02x} {0:02x} {0:02x} {z:02x}', end=' ')
                 status, response, sw1, sw2= select_aid(aidb)
                 if [sw1,sw2] != SW12_NOT_FOUND:
                     print('\r  Found AID:', end=' ')
@@ -494,7 +496,7 @@ def bruteforce_aids(_):
                     if status:
                         decode_pse(response)
                     else:
-                        print('SW1 SW2: %02x %02x' % (sw1,sw2))
+                        print(f'SW1 SW2: {sw1:02x} {sw2:02x}')
 
 def read_record(sfi,record):
     # read a specific record from a file
@@ -515,7 +517,7 @@ def bruteforce_files():
         for x in range(1,256):
             ret, response= read_record(y,x)
             if ret:
-                print("  Record %02x, File %02x: length %d" % (x,y,len(response)))
+                print(f"  Record {x:02x}, File {y:02x}: length {len(response)}")
                 if Verbose:
                     hexprint(response)
                     textprint(response)
@@ -527,7 +529,7 @@ def get_processing_options():
     if check_return(sw1,sw2):
         return True, response
 
-    return False, "%02x%02x" % (sw1,sw2)
+    return False, f"{sw1:02x}{sw2:02x}"
 
 def decode_processing_options(data):
     # extract and decode AIP (Application Interchange Profile)
@@ -540,7 +542,7 @@ def decode_processing_options(data):
         x= 4
         while x < len(data):
             sfi, start, end, offline= decode_afl(data[x:x+4])
-            print('    SFI %02X: starting record %02X, ending record %02X; %02X offline data authentication records' % (sfi,start,end,offline))
+            print(f'    SFI {sfi:02X}: starting record {start:02X}, ending record {end:02X}; {offline:02X} offline data authentication records')
             x += 4
             decode_file(sfi,start,end)
     if data[0] == 0x77:
@@ -553,7 +555,7 @@ def decode_processing_options(data):
                 decode_aip(value)
             if tag == BER_TLV_AFL:
                 sfi, start, end, offline= decode_afl(value)
-                print('    SFI %02X: starting record %02X, ending record %02X; %02X offline data authentication records' % (sfi,start,end,offline))
+                print(f'    SFI {sfi:02X}: starting record {start:02X}, ending record {end:02X}; {offline:02X} offline data authentication records')
                 decode_file(sfi,start,end)
             x += fieldlen
 
@@ -562,12 +564,12 @@ def decode_file(sfi,start,end):
         ret, response= read_record(sfi,y)
         if ret:
             if OutputFiles:
-                file= open('%s-FILE%02XRECORD%02X.HEX' % (CurrentAID,sfi,y),'w')
+                file= open(f'{CurrentAID}-FILE{sfi:02X}RECORD{y:02X}.HEX','w')
                 for item in response:
-                    file.write('%02X' % item)
+                    file.write(f'{item:02X}')
                 file.flush()
                 file.close()
-            print('      record %02X: ' % y, end=' ')
+            print(f'      record {y:02X}: ', end=' ')
             decode_pse(response)
         else:
             print('Read error!')
@@ -591,7 +593,7 @@ def decode_ber_tlv_field(data):
     x= 0
     while x < len(data):
         tag, fieldlen, value= decode_ber_tlv_item(data[x:])
-        print('Tag %04X: ' % tag, end=' ')
+        print(f'Tag {tag:04X}: ', end=' ')
         hexprint(value)
         x += fieldlen
 
@@ -827,19 +829,19 @@ def main():
             current= 0
             while current < len(aidlist):
                 if Verbose:
-                    print('Trying AID: %s -' % aidlist[current][0], end=' ')
+                    print(f'Trying AID: {aidlist[current][0]} -', end=' ')
                     hexprint(aidlist[current][1:])
                 selected, response, sw1, sw2= select_aid(aidlist[current][1:])
                 if selected:
                     CurrentAID= ''
                     for n in range(len(aidlist[current][1:])):
-                        CurrentAID += '%02X' % aidlist[current][1:][n]
+                        CurrentAID += f'{aidlist[current][1:][n]:02X}'
                     if Verbose:
                         print('  Selected: ', end=' ')
                         hexprint(response)
                         textprint(response)
                     else:
-                        print('  Found AID: %s -' % aidlist[current][0], end=' ')
+                        print(f'  Found AID: {aidlist[current][0]} -', end=' ')
                         hexprint(aidlist[current][1:])
                     decode_pse(response)
                     if BruteforcePrimitives:
@@ -885,10 +887,10 @@ def main():
                     current += 1
                 else:
                     if Verbose:
-                        print('  Not found: %02x %02x' % (sw1,sw2))
+                        print(f'  Not found: {sw1:02x} {sw2:02x}')
                     current += 1
         else:
-            print('no PSE: %02x %02x' % (sw1,sw2))
+            print(f'no PSE: {sw1:02x} {sw2:02x}')
 
     except CardRequestTimeoutException:
         print('time-out: no card inserted during last 10s')

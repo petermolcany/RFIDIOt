@@ -27,7 +27,8 @@ import rfidiot
 def main():
     try:
         card= rfidiot.card
-    except:
+    except AttributeError:
+        print("Couldn't open reader!")
         os._exit(True)
 
     args= rfidiot.args
@@ -123,7 +124,7 @@ def main():
                 if card.readertype == card.READER_ACG:
                     card.login('','',card.HITAG2_TRANSPORT_RWD)
             for x in range(4 + offset,-1 + offset,-1):
-                print("    Writing block %02x:" % x, end=' ')
+                print(f"    Writing block {x:02x}:", end=' ')
                 if not card.writeblock(x,outhex[x - offset]):
                     # we expect a Q5 to fail after writing the control block as it re-reads
                     # it before trying to verify the write and switches mode so is now no longer in Q5 mode

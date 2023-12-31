@@ -28,7 +28,7 @@ import rfidiot
 def main():
     try:
         card= rfidiot.card
-    except:
+    except AttributeError:
         print("Couldn't open reader!")
         os._exit(True)
 
@@ -57,7 +57,7 @@ def main():
                 os._exit(True)
             print('Trying static key: ' + key)
         else:
-            key = '%012x' % random.getrandbits(48)
+            key = f'{random.getrandbits(48):012x}'
 
         for card_type in ['AA', 'BB']:
             card.select()

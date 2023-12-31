@@ -27,7 +27,7 @@ import rfidiot
 def main():
     try:
         card= rfidiot.card
-    except:
+    except AttributeError:
         print("Couldn't open reader!")
         os._exit(True)
 
@@ -45,10 +45,10 @@ def main():
     while sector < 0x10:
         for keytype in ['AA', 'BB', 'FF']:
             card.select()
-            print(' sector %02x: Keytype: %s' % (sector, keytype), end=' ')
+            print(f' sector {sector:02x}: Keytype: {keytype}', end=' ')
             if card.login(sector,keytype,''):
                 for block in range(3):
-                    print('\n  block %02x: ' % ((sector * 4) + block), end=' ')
+                    print(f'\n  block {sector * 4 + block:02x}: ', end=' ')
                     data= '00000000'
                     print('Value: ' + data, end=' ')
                     if card.writevalueblock((sector * 4) + block,data):

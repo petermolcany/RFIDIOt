@@ -27,7 +27,8 @@ from rfidiot.pn532 import *
 
 try:
     card= rfidiot.card
-except:
+except AttributeError:
+    print("Couldn't open reader!")
     os._exit(True)
 
 args= rfidiot.args
@@ -116,15 +117,15 @@ sel_res= [args[3]]
 felica= [args[4]]
 nfcid=  [args[5]]
 try:
-    lengt= ['%02x' % (len(args[6]) / 2)]
+    lengt= [f'{len(args[6]) / 2:02x}']
     gt= [args[6]]
-except:
+except IndexError:
     lengt= ['00']
     gt= ['']
 try:
-    lentk= ['%02x' % (len(args[7]) / 2)]
+    lentk= [f'{len(args[7]) / 2:02x}']
     tk= [args[7]]
-except:
+except IndexError:
     lentk= ['00']
     tk= ['']
 
@@ -137,7 +138,7 @@ if not status or card.data[:4] != 'D58D':
 mode= int(card.data[4:6],16)
 baudrate= mode & 0x70
 print('  Emulator activated:')
-print('     UID: 08%s' % uid[0])
+print(f'     UID: 08{uid[0]}')
 print('    Baudrate:', PN532_BAUDRATES[baudrate])
 print('    Mode:', end=' ')
 if mode & 0x08:

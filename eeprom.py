@@ -26,7 +26,7 @@ import rfidiot
 def main():
     try:
         card= rfidiot.card
-    except:
+    except AttributeError:
         print("Couldn't open reader!")
         os._exit(True)
 
@@ -38,7 +38,7 @@ def main():
 
     address= 0
     while address < 0xf0:
-        print('address %02x:\t%s' % (address,card.readEEPROM(address)))
+        print(f'address {address:02x}:\t{card.readEEPROM(address)}')
         address += 1
 
 if __name__ == '__main__':

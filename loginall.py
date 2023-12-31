@@ -38,10 +38,10 @@ def main():
     block = 0
 
     while block < 16:
-        for X in [ 'AA', 'BB', 'FF' ]:
+        for x in [ 'AA', 'BB', 'FF' ]:
             card.select()
-            print(f'{block:02x} {X}: ', end=' ')
-            if card.login(block, X, ''):
+            print(f'{block:02x} {x}: ', end=' ')
+            if card.login(block, x, ''):
                 print("success!")
             elif card.errorcode:
                 print("error: " + card.errorcode)

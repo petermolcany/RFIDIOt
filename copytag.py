@@ -29,7 +29,7 @@ import rfidiot
 def main():
     try:
         card= rfidiot.card
-    except:
+    except AttributeError:
         print("Couldn't open reader!")
         os._exit(True)
 
@@ -43,7 +43,7 @@ def main():
     card.select()
     for x in range(98):
         if card.readblock(x):
-            print('    Block %02x: %s\r' % (x , card.data), end=' ')
+            print(f'    Block {x:02x}: {card.data}')
             sys.stdout.flush()
             buffer.append(card.data)
         else:
@@ -74,17 +74,17 @@ def main():
             os._exit(False)
         print('  Writing:')
         for n in range(x):
-            print('    Block %02x: %s\r' % (n , buffer[n]), end=' ')
+            print(f'    Block {n:02x}: {buffer[n]}')
             sys.stdout.flush()
             if not card.writeblock(n, buffer[n]):
                 print('\nWrite failed!')
         print('\n  Verifying:')
         for n in range(x):
-            print('    Block %02x: %s' % (n , buffer[n]), end=' ')
+            print(f'    Block {n:02x}: {buffer[n]}')
             if not card.readblock(n) or card.data != buffer[n]:
                 print('\nVerify failed!')
                 os._exit(True)
-            print(' OK\r', end=' ')
+            print(' OK')
             sys.stdout.flush()
         print()
         os._exit(False)
