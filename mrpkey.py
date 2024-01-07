@@ -28,6 +28,7 @@
 import sys
 import os
 import binascii
+from typing import NoReturn
 from operator import xor, and_
 from tkinter import *
 from Crypto.Hash import SHA
@@ -302,12 +303,7 @@ map= []
 brnum= 0
 
 def mrzspaces(mrz_data, fill):
-    out= ''
-    for mrz_char in mrz_data:
-        if mrz_char == '<':
-            out += fill
-        else:
-            out += mrz_char
+    out= mrz_data.replace("<", fill)
     return out
 
 Displayed= False
@@ -1032,7 +1028,7 @@ SETBAC=False
 UNSETBAC=False
 PACE= False
 
-def display_help():
+def display_help() -> NoReturn:
     print()
     print('Usage:')
     print('\t' + sys.argv[0] + ' [OPTIONS] <MRZ (Lower)|PLAIN|CHECK|[PATH]> [WRITE|WRITELOCK|SLOWBRUTE]')
@@ -1647,7 +1643,11 @@ if not Nogui:
         for x in range(item):
             mrzoffset += FieldLengths[x]
         if FieldNames[item] == "Issuing State or Organisation" or FieldNames[item] == "Nationality":
-            Label(frame, text= mrzspaces(mrz[mrzoffset:mrzoffset + FieldLengths[item]],' ') + '  ' + passport.ISO3166CountryCodesAlpha[mrzspaces(mrz[mrzoffset:mrzoffset + FieldLengths[item]],'')], font= font).grid(row= row, sticky= W, column= 1)
+            try:
+                country = passport.ISO3166CountryCodesAlpha[mrzspaces(mrz[mrzoffset:mrzoffset + FieldLengths[item]],'')]
+            except KeyError:
+                country = "Invalid/unknown country"
+            Label(frame, text= mrzspaces(mrz[mrzoffset:mrzoffset + FieldLengths[item]],' ') + '  ' + country, font= font).grid(row= row, sticky= W, column= 1)
         else:
             Label(frame, text=mrzspaces(mrz[mrzoffset:mrzoffset + FieldLengths[item]],' '), font= font).grid(row= row, sticky= W, column= 1)
         row += 1
