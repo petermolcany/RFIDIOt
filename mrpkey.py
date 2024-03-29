@@ -537,7 +537,7 @@ def read_file(file):
     datalen= asn1datalength(data[2:])
     print('File Length:', datalen)
     # deduct length field and header from what we've already read
-    readlen= datalen - (3 - asn1fieldlength(data[2:]) / 2)
+    readlen= datalen - int(3 - asn1fieldlength(data[2:]) / 2)
     print('Remaining data length:', readlen)
     # read remaining bytes
     while readlen > 0:
@@ -553,7 +553,7 @@ def read_file(file):
         print('Reading: %05d\r' % readlen, end=' ')
         sys.stdout.flush()
     print()
-    return True, data.decode('hex')
+    return True, bytes.fromhex(data)
 
 def asn1fieldlength(data):
     #return length of number field according to asn.1 rules (doubled as we normally care about the hex version)
@@ -917,7 +917,7 @@ def jmrtd_personalise(documentnumber,dob,expiry):
     p1= '00'
     p2= '62'
     data= '621B04' + f"{len(documentnumber):02x}" + passport.ToHex(documentnumber) + '04' + f"{len(dob):02x}" + passport.ToHex(dob) + '04' + f"{len(expiry):02X}" + passport.ToHex(expiry)
-    lc= f"{len(data) / 2:02X}"
+    lc= f"{int(len(data) / 2):02X}"
     if passport.send_apdu('','','','','',ins,p1,p2,lc,data,''):
         return
     if passport.errorcode == '6D00':
@@ -1494,7 +1494,7 @@ for tag in eflist:
         tag= dg15hex[:2]
         fieldlength= asn1fieldlength(dg15hex[2:])
         outfile= open(tempfiles+"EF_DG15.TMP",'wb+')
-        outfile.write(data[1+fieldlength/2:])
+        outfile.write(data[int(1+fieldlength/2):])
         outfile.flush()
         outfile.close()
         exitstatus= os.system(f"openssl rsa -in {tempfiles}EF_DG15.TMP -inform DER -pubin -text -noout")
@@ -1520,39 +1520,39 @@ if Jmrtd:
     print("Initialising JMRTD or vonJeek...")
     if STRIP_INDEX:
         print('Stripping AA & EAC files')
-        print('old EF.COM: '+raw_efcom.encode('hex'))
+        print('old EF.COM: '+raw_efcom.hex())
         # DG.COM tag & length
-        total_length= ord(raw_efcom[1])
-        new_total_length= ord(raw_efcom[1])
+        total_length= raw_efcom[1]
+        new_total_length= raw_efcom[1]
         i= 2
         tmp= ''
         while i-2 < total_length-1:
             # next tag
             tag= raw_efcom[i]
-            tmp+= raw_efcom[i]
+            tmp+= f'{raw_efcom[i]:02x}'
             # not sure how to distinguish 2-byte tags...
-            if raw_efcom[i]==chr(0x5F) or  raw_efcom[i]==chr(0x7F):
+            if raw_efcom[i]==int(0x5F) or  raw_efcom[i]==int(0x7F):
                 i+= 1
                 tag+= raw_efcom[i]
-                tmp+= raw_efcom[i]
+                tmp+= f'{raw_efcom[i]:02x}'
             i+= 1
-            length= ord(raw_efcom[i])
+            length= raw_efcom[i]
             i+= 1
-            if tag=='5C'.decode('hex'):
+            if tag==int(0x5C):
                 # Keeping only known files in the tag index
                 oldindex=raw_efcom[i:i+length]
                 clearDGs=[EF_DG1, EF_DG2, EF_DG7, EF_DG11, EF_DG12, EF_DG13]
-                newindex=''.join([x for x in list(oldindex) if x.encode('hex') in clearDGs])
-                newlength=len(newindex)
-                tmp+= chr(newlength)+newindex
+                newindex=''.join([f'{x:02x}' for x in list(oldindex) if f'{x:02x}' in clearDGs])
+                newlength=len(bytes.fromhex(newindex))
+                tmp+= f'{newlength:02x}'+newindex
                 i+= newlength
                 # Fixing total length:
                 new_total_length= total_length-(length-newlength)
             else:
-                tmp+= chr(length)+raw_efcom[i:i+length]
+                tmp+= f'{length:02x}'+raw_efcom[i:i+length].hex()
             i+= length
-        raw_efcom= raw_efcom[0]+chr(new_total_length)+tmp
-        print('new EF.COM: '+raw_efcom.encode('hex'))
+        raw_efcom= bytes.fromhex(f'{raw_efcom[0]:02x}'+f'{new_total_length:02x}'+tmp)
+        print('new EF.COM: '+raw_efcom.hex())
         eflist= decode_ef_com(raw_efcom)
         eflist.insert(0,EF_SOD)
         eflist.insert(0,EF_COM)
@@ -1573,7 +1573,7 @@ if Jmrtd:
         jmrtd_write_file(TAG_FID[tag],data)
     # set private key
     # second line of MRZ is second half of decoded mrz from DG1
-    passport.MRPmrzl(mrz[len(mrz) / 2:])
+    passport.MRPmrzl(mrz[int(len(mrz) / 2):])
     print("Setting 3DES key")
     jmrtd_personalise(mrz[FieldKeys[0]:FieldKeys[0]+9],mrz[FieldKeys[1]:FieldKeys[1]+6],mrz[FieldKeys[2]:FieldKeys[2]+6])
     print("JMRTD/vonJeek 3DES key set to: " + mrz[FieldKeys[0]:FieldKeys[0]+9] + mrz[FieldKeys[1]:FieldKeys[1]+6] + mrz[FieldKeys[2]:FieldKeys[2]+6])
