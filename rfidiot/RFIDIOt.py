@@ -124,6 +124,10 @@ class rfidiot:
                             self.readersubtype= self.READER_PCSC
                             self.pcsc_protocol= smartcard.scard.SCARD_PROTOCOL_T1
                             self.hcard = None
+                        elif self.readername.find('ACS ACR1252 1S CL Reader PICC') == 0:
+                            self.readersubtype = self.READER_PCSC
+                            self.pcsc_protocol = smartcard.scard.SCARD_PROTOCOL_T1
+                            self.hcard = None
                         elif self.readername.find('ACS') == 0:
                             self.readersubtype= self.READER_ACS
                             self.pcsc_protocol= smartcard.scard.SCARD_PROTOCOL_T0
